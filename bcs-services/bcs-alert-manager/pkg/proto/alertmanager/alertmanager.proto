@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+package alertmanager;
+
+import "google/api/annotations.proto";
+import "protoc-gen-swagger/options/annotations.proto";
+
+option go_package = "proto/alertmanager;alertmanager";
+
+option (grpc.gateway.protoc_gen_swagger.options.openapiv2_swagger) = {
+  info: {
+    title: "bcs-alert-manager service API Doc"
+    version : "0.0.1"
+  };
+
+  schemes: HTTP
+  consumes: "application/json"
+  produces: "application/json"
+};
+
+// ErrCode error code
+enum ErrCode {
+  // 0 Failure
+  ERROR_NO = 0;
+  // 1 Success
+  ERROR_OK = 1;
+}
+
+service AlertManager {
+  rpc CreateAlertInfo(CreateAlertInfoReq) returns (CreateAlertInfoResp) {
+    option (google.api.http) = {
+      post: "/alertmanager/v1/alerts"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+      description: "创建报警信息"
+      summary: "创建组件或资源的报警信息"
+    };
+  }
+}
+
+message CreateAlertInfoReq {
+  option (grpc.gateway.protoc_gen_swagger.options.openapiv2_schema) = {
+    json_schema: {
+      title: "CreateAlertInfoReq"
+      description: "创建组件或服务的报警事件"
+      required: ["annotations", "labels"]
+    }
+    example: { value: '{ "annotations": {"message": "event body"}, "labels": {"module_name": "bcs-alert-manager", "alarm_name": "oom" }}' }
+  };
+
+  int64 starttime       = 1 [(grpc.gateway.protoc_gen_swagger.options.openapiv2_field) = {title: "starttime", description: "starttime"}];
+  int64 endtime         = 2 [(grpc.gateway.protoc_gen_swagger.options.openapiv2_field) = {title: "endtime", description: "endtime"}];
+  string generatorurl   = 3 [(grpc.gateway.protoc_gen_swagger.options.openapiv2_field) = {title: "generatorurl", description: "generatorurl"}];
+  map<string, string> annotations = 4 [(grpc.gateway.protoc_gen_swagger.options.openapiv2_field) = {title: "annotations", description: "annotations"}];
+  map<string, string> labels  = 5 [(grpc.gateway.protoc_gen_swagger.options.openapiv2_field) = {title: "labels", description: "labels"}];
+}
+
+message CreateAlertInfoResp {
+  uint64             seq     = 1 [(grpc.gateway.protoc_gen_swagger.options.openapiv2_field) = {title: "seq", description: "seq"}];
+  ErrCode            errCode = 2 [(grpc.gateway.protoc_gen_swagger.options.openapiv2_field) = {title: "errCode", description: "errCode"}];
+  string             errMsg  = 3 [(grpc.gateway.protoc_gen_swagger.options.openapiv2_field) = {title: "errMsg", description: "errMsg"}];
+}
+
