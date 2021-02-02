@@ -26,7 +26,7 @@ import (
 	glog "github.com/Tencent/bk-bcs/bcs-common/common/blog"
 	"github.com/Tencent/bk-bcs/bcs-common/common/ssl"
 	"github.com/Tencent/bk-bcs/bcs-common/common/types"
-	"github.com/Tencent/bk-bcs/bcs-k8s/bcs-k8s-watch/app/options"
+	watchoptions "github.com/Tencent/bk-bcs/bcs-k8s/bcs-k8s-watch/app/options"
 )
 
 type ClusterKeeperResponse struct {
@@ -86,7 +86,7 @@ func getClusterKeeperServerAddress(zkHosts string) (string, error) {
 
 }
 
-func GetClusterID(zkHosts string, hostIP string, bcsTLSConfig options.TLS) (string, error) {
+func GetClusterID(zkHosts string, hostIP string, bcsTLSConfig watchoptions.TLS) (string, error) {
 	clusterKeeperAddress, err := getClusterKeeperServerAddress(zkHosts)
 	if err != nil {
 		return "", fmt.Errorf("get clusterkeeper address fail. %v", err)
@@ -136,7 +136,7 @@ func GetClusterID(zkHosts string, hostIP string, bcsTLSConfig options.TLS) (stri
 }
 
 // GetStorageService returns storage InnerService object for discovery.
-func GetStorageService(zkHosts string, bcsTLSConfig options.TLS, customEndpoints []string, isExternal bool) (*InnerService, *RegisterDiscover.RegDiscover, error) {
+func GetStorageService(zkHosts string, bcsTLSConfig watchoptions.TLS, customEndpoints []string, isExternal bool) (*InnerService, *RegisterDiscover.RegDiscover, error) {
 	discovery := RegisterDiscover.NewRegDiscoverEx(zkHosts, 5*time.Second)
 	if err := discovery.Start(); err != nil {
 		return nil, nil, fmt.Errorf("get storage service from ZK failed, %+v", err)
@@ -158,7 +158,7 @@ func GetStorageService(zkHosts string, bcsTLSConfig options.TLS, customEndpoints
 }
 
 // GetNetService returns netservice InnerService object for discovery.
-func GetNetService(zkHosts string, bcsTLSConfig options.TLS, customEndpoints []string, isExternal bool) (*InnerService, *RegisterDiscover.RegDiscover, error) {
+func GetNetService(zkHosts string, bcsTLSConfig watchoptions.TLS, customEndpoints []string, isExternal bool) (*InnerService, *RegisterDiscover.RegDiscover, error) {
 	discovery := RegisterDiscover.NewRegDiscoverEx(zkHosts, 5*time.Second)
 	if err := discovery.Start(); err != nil {
 		return nil, nil, fmt.Errorf("get netservice from ZK failed, %+v", err)

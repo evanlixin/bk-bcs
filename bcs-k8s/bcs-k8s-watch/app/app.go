@@ -22,6 +22,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/Tencent/bk-bcs/bcs-common/common/static"
 	"github.com/Tencent/bk-bcs/bcs-common/common/types"
 	bcsVersion "github.com/Tencent/bk-bcs/bcs-common/common/version"
 	"github.com/Tencent/bk-bcs/bcs-k8s/bcs-k8s-watch/app/bcs"
@@ -287,6 +288,26 @@ func RunAsLeader(stopChan <-chan struct{}, config *options.WatchConfig, clusterI
 	glog.Info("start watcher manager now...")
 	watcherMgr.Run(stopChan)
 	glog.Info("start watcher manager success")
+
+	// start http server
+	glog.Info("start http server")
+	certConfig := bcs.CertConfig{
+		CAFile:   config.HttpServer.CAFile,
+		CertFile: config.HttpServer.ServerCertFile,
+		KeyFile:  config.HttpServer.ServerKeyFile,
+		CertPwd:  static.ServerCertPwd,
+		IsSSL:    config.HttpServer.IsSSL,
+	}
+	httpServer := bcs.GetHTTPServer(config, bcs.WithCertConfig(certConfig), bcs.WithDebug(true))
+	go func() {
+		err = httpServer.ListenAndServe()
+		if err != nil {
+			glog.Errorf("http listen and serve failed: %v", err)
+			close(globalStopChan)
+		}
+	}()
+	// init server actions && register web server
+	glog.Info("start http server successful")
 
 	// finally, start metric, allow fail
 	glog.Info("start metric......")
