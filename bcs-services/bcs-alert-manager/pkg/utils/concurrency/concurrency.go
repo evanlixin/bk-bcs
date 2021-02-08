@@ -30,7 +30,7 @@ func NewConcurrency(num int) *Concurrency {
 	return conNum
 }
 
-// Add() allocate 1 if there is 1 un-used resources
+// Add allocate 1 if there is 1 un-used resources
 func (con *Concurrency) Add() {
 	if con == nil {
 		return
@@ -39,7 +39,7 @@ func (con *Concurrency) Add() {
 	<-con.c
 }
 
-// Done() release 1 resource to resourcePool
+// Done release 1 resource to resourcePool
 func (con *Concurrency) Done() {
 	if con == nil {
 		return

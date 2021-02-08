@@ -20,36 +20,60 @@ import (
 )
 
 const (
+	// ErrStatus for call api failure
 	ErrStatus = "999"
 )
 
 var (
+	// alert_manager grpc request action metrics
+	requestTotalAPI = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Namespace: "bkbcs_alert-manager",
+		Subsystem: "api",
+		Name:      "request_total_num",
+		Help:      "The total num of requests for alertmanager api",
+	}, []string{"handler", "method", "status"})
+	requestLatencyAPI = prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		Namespace: "bkbcs_alert-manager",
+		Subsystem: "api",
+		Name:      "request_latency_time",
+		Help:      "api request latency statistic for alertmanager api",
+		Buckets:   []float64{0.0005, 0.001, 0.0025, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.0, 3.0},
+	}, []string{"handler", "method", "status"})
+
 	// external http requests action metrics
-	requestsTotal = prometheus.NewCounterVec(prometheus.CounterOpts{
+	requestsTotalAlert = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Namespace: "bkbcs_alert-manager",
 		Subsystem: "alert-system",
-		Name:      "request_total",
+		Name:      "request_total_num",
 		Help:      "The total number of requests to alert-system api",
 	}, []string{"handler", "path", "method", "status"})
 
-	requestLatency = prometheus.NewHistogramVec(prometheus.HistogramOpts{
+	requestLatencyAlert = prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Namespace: "bkbcs_alert-manager",
 		Subsystem: "alert-system",
-		Name:      "request_total",
-		Help:      "The total number of requests to alert-system api",
+		Name:      "request_latency_time",
+		Help:      "request latency time for call alert-system api",
 		Buckets:   []float64{0.0005, 0.001, 0.0025, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.0, 3.0},
 	}, []string{"handler", "path", "method", "status"})
 )
 
 func init() {
-	// requests
-	prometheus.MustRegister(requestsTotal)
-	prometheus.MustRegister(requestLatency)
+	// requests alert
+	prometheus.MustRegister(requestsTotalAlert)
+	prometheus.MustRegister(requestLatencyAlert)
+	// alert-manager api
+	prometheus.MustRegister(requestTotalAPI)
+	prometheus.MustRegister(requestLatencyAPI)
 }
 
-//reportAPIMetrics report all api action metrics
-func ReportAPIMetrics(handler, path, method, status string, started time.Time) {
-	requestsTotal.WithLabelValues(handler, path, method, status).Inc()
-	requestLatency.WithLabelValues(handler, path, method, status).Observe(time.Since(started).Seconds())
+//ReportAlertAPIMetrics report all api action metrics
+func ReportAlertAPIMetrics(handler, path, method, status string, started time.Time) {
+	requestsTotalAlert.WithLabelValues(handler, path, method, status).Inc()
+	requestLatencyAlert.WithLabelValues(handler, path, method, status).Observe(time.Since(started).Seconds())
 }
 
+//ReportAlertManagerAPIMetrics report all api action metrics
+func ReportAlertManagerAPIMetrics(handler, method, status string, started time.Time) {
+	requestTotalAPI.WithLabelValues(handler, method, status).Inc()
+	requestLatencyAPI.WithLabelValues(handler, method, status).Observe(time.Since(started).Seconds())
+}

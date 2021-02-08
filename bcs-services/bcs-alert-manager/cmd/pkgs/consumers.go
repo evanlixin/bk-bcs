@@ -17,18 +17,22 @@ import (
 	"strings"
 
 	"github.com/Tencent/bk-bcs/bcs-common/pkg/msgqueue"
-	"github.com/Tencent/bk-bcs/bcs-services/bcs-alert-manager/config"
+	"github.com/Tencent/bk-bcs/bcs-services/bcs-alert-manager/cmd/config"
 	"github.com/Tencent/bk-bcs/bcs-services/bcs-alert-manager/pkg/consumer"
 )
 
+// ResourceSwitch xxx
 type ResourceSwitch string
 
 const (
+	// ResourceSubOn on sub handler
 	ResourceSubOn  ResourceSwitch = "on"
+	// ResourceSubOff off sub handler
 	ResourceSubOff ResourceSwitch = "off"
 )
 
-func GetFactoryConsumers(options config.AlertManagerOptions) []consumer.Consumer {
+// GetFactoryConsumers init consumer object according to resourceSubInfo
+func GetFactoryConsumers(options *config.AlertManagerOptions) []consumer.Consumer {
 	resourceSubInfo := parseResourceSubs(options)
 	consumers := make([]consumer.Consumer, len(resourceSubInfo))
 
@@ -44,7 +48,7 @@ func GetFactoryConsumers(options config.AlertManagerOptions) []consumer.Consumer
 	return consumers
 }
 
-func handlerFactory(resourceKind string, options config.AlertManagerOptions) consumer.Consumer {
+func handlerFactory(resourceKind string, options *config.AlertManagerOptions) consumer.Consumer {
 	switch resourceKind {
 	case msgqueue.EventSubscribeType:
 		return GetEventSyncHandler(options)
@@ -52,7 +56,7 @@ func handlerFactory(resourceKind string, options config.AlertManagerOptions) con
 	return nil
 }
 
-func parseResourceSubs(options config.AlertManagerOptions) map[string]string {
+func parseResourceSubs(options *config.AlertManagerOptions) map[string]string {
 	resourceSubs := make(map[string]string)
 
 	for _, resource := range options.ResourceSubs {

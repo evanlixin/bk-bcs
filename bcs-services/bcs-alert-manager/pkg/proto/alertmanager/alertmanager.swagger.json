@@ -14,16 +14,16 @@
     "application/json"
   ],
   "paths": {
-    "/alertmanager/v1/alerts": {
+    "/alertmanager/v1/businessalerts": {
       "post": {
-        "summary": "创建组件或资源的报警信息",
-        "description": "创建报警信息",
-        "operationId": "AlertManager_CreateAlertInfo",
+        "summary": "创建组件或资源的定制报警信息",
+        "description": "创建业务定制化报警信息",
+        "operationId": "AlertManager_CreateBusinessAlertInfo",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/alertmanagerCreateAlertInfoResp"
+              "$ref": "#/definitions/alertmanagerCreateBusinessAlertInfoResp"
             }
           },
           "default": {
@@ -39,7 +39,41 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/alertmanagerCreateAlertInfoReq"
+              "$ref": "#/definitions/alertmanagerCreateBusinessAlertInfoReq"
+            }
+          }
+        ],
+        "tags": [
+          "AlertManager"
+        ]
+      }
+    },
+    "/alertmanager/v1/rawalerts": {
+      "post": {
+        "summary": "创建组件或资源的原生报警信息(业务可配置场景)",
+        "description": "创建原生报警信息",
+        "operationId": "AlertManager_CreateRawAlertInfo",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/alertmanagerCreateRawAlertInfoResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/alertmanagerCreateRawAlertInfoReq"
             }
           }
         ],
@@ -50,7 +84,119 @@
     }
   },
   "definitions": {
-    "alertmanagerCreateAlertInfoReq": {
+    "alertmanagerAlertAnnotation": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "description": "告警内容",
+          "title": "message"
+        },
+        "comment": {
+          "type": "string",
+          "description": "告警注释",
+          "title": "comment"
+        }
+      },
+      "description": "报警annotation信息(报警内容/报警注释)",
+      "title": "ModuleAlertLabel",
+      "required": [
+        "message"
+      ]
+    },
+    "alertmanagerCommonAlertLabel": {
+      "type": "object",
+      "properties": {
+        "alarmType": {
+          "type": "string",
+          "description": "报警类型(cpu/mem/io)",
+          "title": "alarmType"
+        },
+        "clusterID": {
+          "type": "string",
+          "description": "集群ID(组件报警集群ID统一: 9999)",
+          "title": "clusterID"
+        }
+      },
+      "description": "报警的公共label信息",
+      "title": "CommonAlertLabel",
+      "required": [
+        "alarmType",
+        "clusterID"
+      ]
+    },
+    "alertmanagerCreateBusinessAlertInfoReq": {
+      "type": "object",
+      "properties": {
+        "starttime": {
+          "type": "string",
+          "format": "int64",
+          "description": "告警开始时间(时间戳)",
+          "title": "starttime"
+        },
+        "endtime": {
+          "type": "string",
+          "format": "int64",
+          "description": "告警结束时间(时间戳)",
+          "title": "endtime"
+        },
+        "generatorurl": {
+          "type": "string",
+          "description": "原系统URL,可为空",
+          "title": "generatorurl"
+        },
+        "alarmType": {
+          "type": "string",
+          "description": "报警类型(resource/module)",
+          "title": "alarmType"
+        },
+        "AlertAnnotation": {
+          "$ref": "#/definitions/alertmanagerAlertAnnotation",
+          "description": "报警内容",
+          "title": "AlertAnnotation"
+        },
+        "ModuleAlertLabel": {
+          "$ref": "#/definitions/alertmanagerModuleAlertLabel",
+          "description": "模块报警标识",
+          "title": "ModuleAlertLabel"
+        },
+        "ResourceAlertLabel": {
+          "$ref": "#/definitions/alertmanagerResourceAlertLabel",
+          "description": "资源报警标识",
+          "title": "ResourceAlertLabel"
+        }
+      },
+      "description": "创建组件或服务的报警事件(定制化)",
+      "title": "CreateBusinessAlertInfoReq",
+      "required": [
+        "starttime",
+        "alarmType",
+        "AlertAnnotation"
+      ]
+    },
+    "alertmanagerCreateBusinessAlertInfoResp": {
+      "type": "object",
+      "properties": {
+        "errCode": {
+          "type": "string",
+          "format": "uint64",
+          "description": "请求返回状态码",
+          "title": "errCode"
+        },
+        "errMsg": {
+          "type": "string",
+          "description": "请求错误信息",
+          "title": "errMsg"
+        }
+      },
+      "description": "创建组件或服务的定制报警事件返回",
+      "title": "CreateBusinessAlertInfoResp",
+      "required": [
+        "errCode",
+        "errMsg"
+      ]
+    },
+    "alertmanagerCreateRawAlertInfoReq": {
       "type": "object",
       "example": {
         "annotations": {
@@ -65,18 +211,18 @@
         "starttime": {
           "type": "string",
           "format": "int64",
-          "description": "starttime",
+          "description": "告警开始时间(时间戳)",
           "title": "starttime"
         },
         "endtime": {
           "type": "string",
           "format": "int64",
-          "description": "endtime",
+          "description": "告警结束时间(时间戳)",
           "title": "endtime"
         },
         "generatorurl": {
           "type": "string",
-          "description": "generatorurl",
+          "description": "原系统URL,可为空",
           "title": "generatorurl"
         },
         "annotations": {
@@ -92,43 +238,108 @@
           }
         }
       },
-      "description": "创建组件或服务的报警事件",
-      "title": "CreateAlertInfoReq",
+      "description": "创建组件或服务的报警事件(原生)",
+      "title": "CreateRawAlertInfoReq",
       "required": [
         "annotations",
         "labels"
       ]
     },
-    "alertmanagerCreateAlertInfoResp": {
+    "alertmanagerCreateRawAlertInfoResp": {
       "type": "object",
       "properties": {
-        "seq": {
+        "errCode": {
           "type": "string",
           "format": "uint64",
-          "description": "seq",
-          "title": "seq"
-        },
-        "errCode": {
-          "$ref": "#/definitions/alertmanagerErrCode",
-          "description": "errCode",
+          "description": "请求返回状态码",
           "title": "errCode"
         },
         "errMsg": {
           "type": "string",
-          "description": "errMsg",
+          "description": "请求错误信息",
           "title": "errMsg"
         }
-      }
+      },
+      "description": "创建组件或服务的报警事件返回",
+      "title": "CreateRawAlertInfoResp",
+      "required": [
+        "errCode",
+        "errMsg"
+      ]
     },
-    "alertmanagerErrCode": {
-      "type": "string",
-      "enum": [
-        "ERROR_NO",
-        "ERROR_OK"
-      ],
-      "default": "ERROR_NO",
-      "description": "- ERROR_NO: 0 Failure\n - ERROR_OK: 1 Success",
-      "title": "ErrCode error code"
+    "alertmanagerModuleAlertLabel": {
+      "type": "object",
+      "properties": {
+        "commonLabel": {
+          "$ref": "#/definitions/alertmanagerCommonAlertLabel",
+          "description": "报警的公共label信息(必须)",
+          "title": "commonLabel"
+        },
+        "moduleName": {
+          "type": "string",
+          "description": "模块名称",
+          "title": "moduleName"
+        },
+        "moduleIP": {
+          "type": "string",
+          "description": "模块IP",
+          "title": "moduleIP"
+        },
+        "alarmName": {
+          "type": "string",
+          "description": "报警metric名称",
+          "title": "alarmName"
+        },
+        "alarmLevel": {
+          "type": "string",
+          "description": "报警等级(info/error/warn)",
+          "title": "alarmLevel"
+        }
+      },
+      "description": "模块报警的标识label信息",
+      "title": "ModuleAlertLabel",
+      "required": [
+        "commonLabel",
+        "moduleName",
+        "moduleIP",
+        "alarmName"
+      ]
+    },
+    "alertmanagerResourceAlertLabel": {
+      "type": "object",
+      "properties": {
+        "commonLabel": {
+          "$ref": "#/definitions/alertmanagerCommonAlertLabel",
+          "description": "报警的公共label信息(必须)",
+          "title": "commonLabel"
+        },
+        "nameSpace": {
+          "type": "string",
+          "description": "资源命名空间",
+          "title": "nameSpace"
+        },
+        "alarmResourceType": {
+          "type": "string",
+          "description": "报警资源类型",
+          "title": "alarmResourceType"
+        },
+        "alarmResourceName": {
+          "type": "string",
+          "description": "报警资源名称",
+          "title": "alarmResourceName"
+        },
+        "alarmLevel": {
+          "type": "string",
+          "description": "报警等级(info/error/warn)",
+          "title": "alarmLevel"
+        }
+      },
+      "description": "资源报警的标识label信息",
+      "title": "ResourceAlertLabel",
+      "required": [
+        "commonLabel",
+        "moduleIP"
+      ]
     },
     "protobufAny": {
       "type": "object",

@@ -27,9 +27,11 @@ import (
 )
 
 const (
+	// ResourceType event
 	ResourceType = "Event"
 )
 
+// SyncEventHandler event handler
 type SyncEventHandler struct {
 	unSub        func()
 	stopCtx      context.Context
@@ -40,11 +42,13 @@ type SyncEventHandler struct {
 	alertBarrier *concurrency.Concurrency
 }
 
+// Options for eventHandler
 type Options struct {
 	ConcurrencyNum int
 	Client         alert.BcsAlarmInterface
 }
 
+// NewSyncEventHandler create event handler object
 func NewSyncEventHandler(opt Options) *SyncEventHandler {
 	ctx, cancel := context.WithCancel(context.Background())
 
@@ -112,6 +116,7 @@ func (eh *SyncEventHandler) sendEvenDataToAlert(event *msgqueue.HandlerData) err
 	return nil
 }
 
+// HandleQueueEvent register queue for event callback
 func (eh *SyncEventHandler) HandleQueueEvent(ctx context.Context, data []byte) error {
 	defer func() {
 		if r := recover(); r != nil {
@@ -153,6 +158,7 @@ func validateResourceType(resourceType string) bool {
 	return true
 }
 
+// Consume subscribe Event queue & backgroundSync
 func (eh *SyncEventHandler) Consume(ctx context.Context, sub msgqueue.MessageQueue) error {
 	unSub, _ := sub.Subscribe(msgqueue.HandlerWrap("event-handler", eh.HandleQueueEvent), eh.filters, msgqueue.EventSubscribeType)
 
@@ -165,6 +171,7 @@ func (eh *SyncEventHandler) Consume(ctx context.Context, sub msgqueue.MessageQue
 	return nil
 }
 
+// Stop close chanQueue & unSub
 func (eh *SyncEventHandler) Stop() error {
 	eh.unSub()
 	close(eh.eventListCh)

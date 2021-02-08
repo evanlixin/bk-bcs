@@ -18,7 +18,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Tencent/bk-bcs/bcs-services/bcs-alert-manager/config"
+	"github.com/Tencent/bk-bcs/bcs-services/bcs-alert-manager/cmd/config"
 )
 
 var defaultOptions = &config.AlertServerOptions{

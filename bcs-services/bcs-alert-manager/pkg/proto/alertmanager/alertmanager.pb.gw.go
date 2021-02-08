@@ -31,8 +31,8 @@ var _ = runtime.String
 var _ = utilities.NewDoubleArray
 var _ = descriptor.ForMessage
 
-func request_AlertManager_CreateAlertInfo_0(ctx context.Context, marshaler runtime.Marshaler, client AlertManagerClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq CreateAlertInfoReq
+func request_AlertManager_CreateRawAlertInfo_0(ctx context.Context, marshaler runtime.Marshaler, client AlertManagerClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq CreateRawAlertInfoReq
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -43,13 +43,13 @@ func request_AlertManager_CreateAlertInfo_0(ctx context.Context, marshaler runti
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := client.CreateAlertInfo(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.CreateRawAlertInfo(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func local_request_AlertManager_CreateAlertInfo_0(ctx context.Context, marshaler runtime.Marshaler, server AlertManagerServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq CreateAlertInfoReq
+func local_request_AlertManager_CreateRawAlertInfo_0(ctx context.Context, marshaler runtime.Marshaler, server AlertManagerServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq CreateRawAlertInfoReq
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -60,17 +60,51 @@ func local_request_AlertManager_CreateAlertInfo_0(ctx context.Context, marshaler
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := server.CreateAlertInfo(ctx, &protoReq)
+	msg, err := server.CreateRawAlertInfo(ctx, &protoReq)
 	return msg, metadata, err
 
 }
 
-// RegisterAlertManagerHandlerServer registers the http handlers for service AlertManager to "mux".
+func request_AlertManager_CreateBusinessAlertInfo_0(ctx context.Context, marshaler runtime.Marshaler, client AlertManagerClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq CreateBusinessAlertInfoReq
+	var metadata runtime.ServerMetadata
+
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	}
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := client.CreateBusinessAlertInfo(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_AlertManager_CreateBusinessAlertInfo_0(ctx context.Context, marshaler runtime.Marshaler, server AlertManagerServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq CreateBusinessAlertInfoReq
+	var metadata runtime.ServerMetadata
+
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	}
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := server.CreateBusinessAlertInfo(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
+// RegisterAlertManagerGwServer registers the http handlers for service AlertManager to "mux".
 // UnaryRPC     :call AlertManagerServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
-func RegisterAlertManagerHandlerServer(ctx context.Context, mux *runtime.ServeMux, server AlertManagerServer) error {
+func RegisterAlertManagerGwServer(ctx context.Context, mux *runtime.ServeMux, server AlertManagerServer) error {
 
-	mux.Handle("POST", pattern_AlertManager_CreateAlertInfo_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_AlertManager_CreateRawAlertInfo_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -79,23 +113,43 @@ func RegisterAlertManagerHandlerServer(ctx context.Context, mux *runtime.ServeMu
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_AlertManager_CreateAlertInfo_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_AlertManager_CreateRawAlertInfo_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_AlertManager_CreateAlertInfo_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_AlertManager_CreateRawAlertInfo_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("POST", pattern_AlertManager_CreateBusinessAlertInfo_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_AlertManager_CreateBusinessAlertInfo_0(rctx, inboundMarshaler, server, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_AlertManager_CreateBusinessAlertInfo_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
 	return nil
 }
 
-// RegisterAlertManagerHandlerFromEndpoint is same as RegisterAlertManagerHandler but
+// RegisterAlertManagerGwFromEndpoint is same as RegisterAlertManagerGw but
 // automatically dials to "endpoint" and closes the connection when "ctx" gets done.
-func RegisterAlertManagerHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
+func RegisterAlertManagerGwFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
 	conn, err := grpc.Dial(endpoint, opts...)
 	if err != nil {
 		return err
@@ -115,23 +169,23 @@ func RegisterAlertManagerHandlerFromEndpoint(ctx context.Context, mux *runtime.S
 		}()
 	}()
 
-	return RegisterAlertManagerHandler(ctx, mux, conn)
+	return RegisterAlertManagerGw(ctx, mux, conn)
 }
 
-// RegisterAlertManagerHandler registers the http handlers for service AlertManager to "mux".
+// RegisterAlertManagerGw registers the http handlers for service AlertManager to "mux".
 // The handlers forward requests to the grpc endpoint over "conn".
-func RegisterAlertManagerHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
-	return RegisterAlertManagerHandlerClient(ctx, mux, NewAlertManagerClient(conn))
+func RegisterAlertManagerGw(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
+	return RegisterAlertManagerGwClient(ctx, mux, NewAlertManagerClient(conn))
 }
 
-// RegisterAlertManagerHandlerClient registers the http handlers for service AlertManager
+// RegisterAlertManagerGwClient registers the http handlers for service AlertManager
 // to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "AlertManagerClient".
 // Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "AlertManagerClient"
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
 // "AlertManagerClient" to call the correct interceptors.
-func RegisterAlertManagerHandlerClient(ctx context.Context, mux *runtime.ServeMux, client AlertManagerClient) error {
+func RegisterAlertManagerGwClient(ctx context.Context, mux *runtime.ServeMux, client AlertManagerClient) error {
 
-	mux.Handle("POST", pattern_AlertManager_CreateAlertInfo_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_AlertManager_CreateRawAlertInfo_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -140,14 +194,34 @@ func RegisterAlertManagerHandlerClient(ctx context.Context, mux *runtime.ServeMu
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_AlertManager_CreateAlertInfo_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_AlertManager_CreateRawAlertInfo_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_AlertManager_CreateAlertInfo_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_AlertManager_CreateRawAlertInfo_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("POST", pattern_AlertManager_CreateBusinessAlertInfo_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_AlertManager_CreateBusinessAlertInfo_0(rctx, inboundMarshaler, client, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_AlertManager_CreateBusinessAlertInfo_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -155,9 +229,13 @@ func RegisterAlertManagerHandlerClient(ctx context.Context, mux *runtime.ServeMu
 }
 
 var (
-	pattern_AlertManager_CreateAlertInfo_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"alertmanager", "v1", "alerts"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_AlertManager_CreateRawAlertInfo_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"alertmanager", "v1", "rawalerts"}, "", runtime.AssumeColonVerbOpt(true)))
+
+	pattern_AlertManager_CreateBusinessAlertInfo_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"alertmanager", "v1", "businessalerts"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (
-	forward_AlertManager_CreateAlertInfo_0 = runtime.ForwardResponseMessage
+	forward_AlertManager_CreateRawAlertInfo_0 = runtime.ForwardResponseMessage
+
+	forward_AlertManager_CreateBusinessAlertInfo_0 = runtime.ForwardResponseMessage
 )

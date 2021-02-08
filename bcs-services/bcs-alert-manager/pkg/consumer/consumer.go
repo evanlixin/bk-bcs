@@ -15,20 +15,18 @@ package consumer
 
 import (
 	"context"
-	glog "github.com/Tencent/bk-bcs/bcs-common/common/blog"
+
+	"github.com/Tencent/bk-bcs/bcs-common/common/blog"
 	"github.com/Tencent/bk-bcs/bcs-common/pkg/msgqueue"
-	"os"
-	"os/signal"
-	"syscall"
 )
 
-// Consumer xxx
+// Consumer for subscribe handler interface
 type Consumer interface {
 	Consume(ctx context.Context, queue msgqueue.MessageQueue) error
 	Stop() error
 }
 
-// Consumers xxx
+// Consumers manager all consumer for subscribe handler
 type Consumers struct {
 	ctx       context.Context
 	cancel    context.CancelFunc
@@ -36,6 +34,7 @@ type Consumers struct {
 	consumers []Consumer
 }
 
+// NewConsumers init consumers
 func NewConsumers(consumers []Consumer, queue msgqueue.MessageQueue) *Consumers {
 	c := &Consumers{
 		que:       queue,
@@ -46,6 +45,7 @@ func NewConsumers(consumers []Consumer, queue msgqueue.MessageQueue) *Consumers 
 	return c
 }
 
+// Run run all consumer
 func (c *Consumers) Run() {
 	if c == nil {
 		return
@@ -55,7 +55,7 @@ func (c *Consumers) Run() {
 		go func(ctx context.Context, consumer Consumer) {
 			defer func() {
 				if r := recover(); r != nil {
-					glog.Errorf("[monitor][panic] consumer panic: %v\n", r)
+					blog.Errorf("[monitor][panic] consumer panic: %v\n", r)
 				}
 			}()
 
@@ -64,18 +64,12 @@ func (c *Consumers) Run() {
 	}
 }
 
-func (c *Consumers) Wait() {
-	signals := make(chan os.Signal, 10)
-	signal.Notify(signals, syscall.SIGTERM, syscall.SIGINT)
-
-	select {
-	case <-signals:
-		signal.Stop(signals)
-		glog.Info("recv term signal")
-		for idx := range c.consumers {
-			c.consumers[idx].Stop()
-		}
-		c.cancel()
-		c.que.Stop()
+// Stop stop subscribe & close queue
+func (c *Consumers) Stop() {
+	blog.Info("recv term signal")
+	for idx := range c.consumers {
+		c.consumers[idx].Stop()
 	}
+	c.cancel()
+	c.que.Stop()
 }

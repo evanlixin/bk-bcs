@@ -1,0 +1,41 @@
+{
+"serviceOptions": {
+   "address": "${bcsAlertManagerAddress}",
+   "port": ${bcsAlertManagerPort},
+   "metricport": ${bcsAlertManagerMetricPort},
+   "servercert": "${bcsAlertManagerServerCert}",
+   "serverkey": "${bcsAlertManagerServerKey}",
+   "serverca": "${bcsAlertManagerServerCa}"
+},
+"clientTLSConfig": {
+   "clientcert": "${bcsAlertManagerClientCert}",
+   "clientkey": "${bcsAlertManagerClientKey}",
+   "clientca": "${bcsAlertManagerClientCa}"
+},
+"swaggerConfigDir": {
+	"dir": "${bcsAlertManagerSwaggerDir}"
+},
+"logOptions": {
+	"log_dir": "${bcsAlertManagerLogDir}"
+},
+"etcdOptions": {
+	"etcd-servers": "${bcsAlertManagerEtcdServers}",
+	"etcd-cafile": "${bcsAlertManagerEtcdCa}",
+	"etcd-certfile": "${bcsAlertManagerEtcdCert}",
+	"etcd-keyfile": "${bcsAlertManagerEtcdkey}"
+},
+"alertServerOptions": {
+	"server": "${bcsAlertManagerAppServer}",
+	"appCode": "${bcsAlertManagerAppCode}",
+	"appSecret": "${bcsAlertManagerAppSecret}",
+	"debugLevel": ${bcsAlertManagerLevel}
+},
+"queue_config_file": "${bcsAlertManagerQueue}",
+"debug_mode": ${bcsAlertManagerDebug},
+"resourceSubs" : [
+	{
+		"switch": "${bcsAlertManagerResourceSwitch}",
+		"category": "${bcsAlertManagerEvent}"
+	}
+]
+}

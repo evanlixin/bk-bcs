@@ -40,7 +40,7 @@ default:api client storage executor mesos-driver mesos-watch scheduler \
 	hpacontroller kube-sche consoleproxy clb-controller gw-controller logbeat-sidecar \
 	csi-cbs bcs-webhook-server gamestatefulset network detection cpuset bcs-networkpolicy \
 	tools gateway user-manager cc-agent bkcmdb-synchronizer bcs-cloud-netservice bcs-cloud-netcontroller \
-	bcs-cloud-netagent mesh-manager bcs-ingress-controller log-manager gamedeployment
+	bcs-cloud-netagent mesh-manager bcs-ingress-controller log-manager gamedeployment bcs-alert-manager
 
 bcs-k8s:k8s-watch kube-agent k8s-driver csi-cbs kube-sche gamestatefulset gamedeployment \
 	cc-agent
@@ -50,7 +50,7 @@ bcs-mesos:mesos-driver mesos-watch scheduler loadbalance netservice hpacontrolle
 
 bcs-service:api client bkcmdb-synchronizer clb-controller cpuset gateway gw-controller log-manager \
 	mesh-manager logbeat-sidecar metricservice metriccollector netservice sd-prometheus storage \
-	user-manager bcs-webhook-server
+	user-manager bcs-webhook-server bcs-alert-manager
 
 bcs-network:network bcs-ingress-controller bcs-cloud-netservice bcs-cloud-netcontroller bcs-cloud-netagent
 
@@ -133,6 +133,14 @@ storage:pre
 	mkdir -p ${PACKAGEPATH}/bcs-services
 	cp -R ./install/conf/bcs-services/bcs-storage ${PACKAGEPATH}/bcs-services
 	go build ${LDFLAG} -o ${PACKAGEPATH}/bcs-services/bcs-storage/bcs-storage ./bcs-services/bcs-storage/storage.go
+
+bcs-alert-manager:pre
+	mkdir -p ${PACKAGEPATH}/bcs-services
+	cp -R ./install/conf/bcs-services/bcs-alert-manager ${PACKAGEPATH}/bcs-services
+	mkdir -p ${PACKAGEPATH}/bcs-services/bcs-alert-manager/swagger
+	cp -R ./bcs-services/bcs-alert-manager/pkg/third_party/swagger-ui ${PACKAGEPATH}/bcs-services/bcs-alert-manager/swagger/swagger-ui
+	cp -R ./bcs-services/bcs-alert-manager/pkg/proto/alertmanager/alertmanager.swagger.json ${PACKAGEPATH}/bcs-services/bcs-alert-manager/swagger/alertmanager.swagger.json
+	go build ${LDFLAG} -o ${PACKAGE}/bcs-services/bcs-alert-manager/bcs-alert-manager ./bcs-services/bcs-alert-manager/main.go
 
 loadbalance:pre
 	go build ${LDFLAG} -o ${PACKAGEPATH}/bcs-services/bcs-loadbalance/bcs-loadbalance ./bcs-services/bcs-loadbalance/main.go

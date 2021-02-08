@@ -23,7 +23,7 @@ type AlarmAnnotationKey string
 const (
 	// AlarmAnnotationsUUID annotations uuid
 	AlarmAnnotationsUUID AlarmAnnotationKey = "uuid"
-	// AlarmMessage annotations message
+	// AlarmAnnotationsBody annotations message
 	AlarmAnnotationsBody AlarmAnnotationKey = "message"
 	// AlarmAnnotationsComment annotations comment
 	AlarmAnnotationsComment AlarmAnnotationKey = "comment"
@@ -65,6 +65,13 @@ const (
 
 	// AlarmLabelsAlarmLevel labels level
 	AlarmLabelsAlarmLevel AlarmLabelsKey = "alarm_level"
+)
+
+const (
+	// Resource show resource kind
+	Resource = "resource"
+	// Module show module kind
+	Module   = "module"
 )
 
 // AlertServer ErrInfo

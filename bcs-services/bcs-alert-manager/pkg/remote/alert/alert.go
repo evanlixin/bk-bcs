@@ -21,7 +21,7 @@ import (
 	"time"
 
 	glog "github.com/Tencent/bk-bcs/bcs-common/common/blog"
-	"github.com/Tencent/bk-bcs/bcs-services/bcs-alert-manager/config"
+	"github.com/Tencent/bk-bcs/bcs-services/bcs-alert-manager/cmd/config"
 	"github.com/Tencent/bk-bcs/bcs-services/bcs-alert-manager/pkg/remote/metrics"
 
 	"github.com/parnurzeal/gorequest"
@@ -57,7 +57,7 @@ type alarmServer struct {
 	serverDebug bool
 }
 
-// Options init specific alarmServer
+// Option xxx
 type Option func(alarm *alarmServer)
 
 // WithTestDebug set alarmServer testDebug
@@ -117,7 +117,7 @@ func (s *alarmServer) SendAlarmInfoToAlertServer(data []AlarmReqData, timeOut ti
 	if len(errs) > 0 {
 		glog.Errorf("call api SendAlarmInfoToAlertServer failed: %v", errs[0])
 		if !s.testDebug {
-			metrics.ReportAPIMetrics(apiName, path, http.MethodPost, metrics.ErrStatus, start)
+			metrics.ReportAlertAPIMetrics(apiName, path, http.MethodPost, metrics.ErrStatus, start)
 		}
 		return errs[0]
 	}
@@ -126,13 +126,13 @@ func (s *alarmServer) SendAlarmInfoToAlertServer(data []AlarmReqData, timeOut ti
 		errMsg := fmt.Errorf("alertServer error: code[%v], status[%v], errType[%s], err[%s]",
 			resp.StatusCode, respData.Status, respData.ErrType, respData.Error)
 		if !s.testDebug {
-			metrics.ReportAPIMetrics(apiName, path, http.MethodPost, fmt.Sprintf("%d", resp.StatusCode), start)
+			metrics.ReportAlertAPIMetrics(apiName, path, http.MethodPost, fmt.Sprintf("%d", resp.StatusCode), start)
 		}
 		return errMsg
 	}
 
 	if !s.testDebug {
-		metrics.ReportAPIMetrics(apiName, path, http.MethodPost, fmt.Sprintf("%d", resp.StatusCode), start)
+		metrics.ReportAlertAPIMetrics(apiName, path, http.MethodPost, fmt.Sprintf("%d", resp.StatusCode), start)
 	}
 
 	return nil

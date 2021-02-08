@@ -14,13 +14,14 @@
 package pkgs
 
 import (
-	"github.com/Tencent/bk-bcs/bcs-services/bcs-alert-manager/config"
 	"sync"
 
+	"github.com/Tencent/bk-bcs/bcs-services/bcs-alert-manager/cmd/config"
 	"github.com/Tencent/bk-bcs/bcs-services/bcs-alert-manager/pkg/handler/eventhandler"
 )
 
 const (
+	// alert-system interface concurrency
 	EventHandleConcurrencyNum = 100
 )
 
@@ -29,7 +30,8 @@ var (
 	eventHandler     *eventhandler.SyncEventHandler
 )
 
-func GetEventSyncHandler(options config.AlertManagerOptions) *eventhandler.SyncEventHandler {
+// GetEventSyncHandler get eventSyncHandler consumer
+func GetEventSyncHandler(options *config.AlertManagerOptions) *eventhandler.SyncEventHandler {
 	eventHandlerOnce.Do(func() {
 		eventHandler = eventhandler.NewSyncEventHandler(eventhandler.Options{
 			ConcurrencyNum: EventHandleConcurrencyNum,

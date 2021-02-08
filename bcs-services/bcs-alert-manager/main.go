@@ -13,6 +13,25 @@
 
 package main
 
-func main() {
+import (
+	"github.com/Tencent/bk-bcs/bcs-common/common/blog"
+	"github.com/Tencent/bk-bcs/bcs-common/common/conf"
+	"github.com/Tencent/bk-bcs/bcs-services/bcs-alert-manager/cmd"
+	"github.com/Tencent/bk-bcs/bcs-services/bcs-alert-manager/cmd/config"
+)
 
+func main() {
+	// init alertManager options config
+	alertManagerOptions := config.NewAlertManagerOptions()
+	conf.Parse(alertManagerOptions)
+
+	// init log config
+	blog.InitLogs(alertManagerOptions.LogOptions)
+	defer blog.CloseLogs()
+
+	// init alertManager & run server/consumer
+	alertManager := cmd.NewAlertManager(alertManagerOptions)
+	if err := alertManager.Run(); err != nil {
+		blog.Fatalf("alertManager run failed: %v", err)
+	}
 }

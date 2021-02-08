@@ -5,6 +5,7 @@ package alertmanager
 
 import (
 	fmt "fmt"
+	_ "github.com/envoyproxy/protoc-gen-validate/validate"
 	proto "github.com/golang/protobuf/proto"
 	_ "github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger/options"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
@@ -40,8 +41,15 @@ var _ server.Option
 func NewAlertManagerEndpoints() []*api.Endpoint {
 	return []*api.Endpoint{
 		&api.Endpoint{
-			Name:    "AlertManager.CreateAlertInfo",
-			Path:    []string{"/alertmanager/v1/alerts"},
+			Name:    "AlertManager.CreateRawAlertInfo",
+			Path:    []string{"/alertmanager/v1/rawalerts"},
+			Method:  []string{"POST"},
+			Body:    "*",
+			Handler: "rpc",
+		},
+		&api.Endpoint{
+			Name:    "AlertManager.CreateBusinessAlertInfo",
+			Path:    []string{"/alertmanager/v1/businessalerts"},
 			Method:  []string{"POST"},
 			Body:    "*",
 			Handler: "rpc",
@@ -52,7 +60,8 @@ func NewAlertManagerEndpoints() []*api.Endpoint {
 // Client API for AlertManager service
 
 type AlertManagerService interface {
-	CreateAlertInfo(ctx context.Context, in *CreateAlertInfoReq, opts ...client.CallOption) (*CreateAlertInfoResp, error)
+	CreateRawAlertInfo(ctx context.Context, in *CreateRawAlertInfoReq, opts ...client.CallOption) (*CreateRawAlertInfoResp, error)
+	CreateBusinessAlertInfo(ctx context.Context, in *CreateBusinessAlertInfoReq, opts ...client.CallOption) (*CreateBusinessAlertInfoResp, error)
 }
 
 type alertManagerService struct {
@@ -67,9 +76,19 @@ func NewAlertManagerService(name string, c client.Client) AlertManagerService {
 	}
 }
 
-func (c *alertManagerService) CreateAlertInfo(ctx context.Context, in *CreateAlertInfoReq, opts ...client.CallOption) (*CreateAlertInfoResp, error) {
-	req := c.c.NewRequest(c.name, "AlertManager.CreateAlertInfo", in)
-	out := new(CreateAlertInfoResp)
+func (c *alertManagerService) CreateRawAlertInfo(ctx context.Context, in *CreateRawAlertInfoReq, opts ...client.CallOption) (*CreateRawAlertInfoResp, error) {
+	req := c.c.NewRequest(c.name, "AlertManager.CreateRawAlertInfo", in)
+	out := new(CreateRawAlertInfoResp)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *alertManagerService) CreateBusinessAlertInfo(ctx context.Context, in *CreateBusinessAlertInfoReq, opts ...client.CallOption) (*CreateBusinessAlertInfoResp, error) {
+	req := c.c.NewRequest(c.name, "AlertManager.CreateBusinessAlertInfo", in)
+	out := new(CreateBusinessAlertInfoResp)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -80,20 +99,29 @@ func (c *alertManagerService) CreateAlertInfo(ctx context.Context, in *CreateAle
 // Server API for AlertManager service
 
 type AlertManagerHandler interface {
-	CreateAlertInfo(context.Context, *CreateAlertInfoReq, *CreateAlertInfoResp) error
+	CreateRawAlertInfo(context.Context, *CreateRawAlertInfoReq, *CreateRawAlertInfoResp) error
+	CreateBusinessAlertInfo(context.Context, *CreateBusinessAlertInfoReq, *CreateBusinessAlertInfoResp) error
 }
 
 func RegisterAlertManagerHandler(s server.Server, hdlr AlertManagerHandler, opts ...server.HandlerOption) error {
 	type alertManager interface {
-		CreateAlertInfo(ctx context.Context, in *CreateAlertInfoReq, out *CreateAlertInfoResp) error
+		CreateRawAlertInfo(ctx context.Context, in *CreateRawAlertInfoReq, out *CreateRawAlertInfoResp) error
+		CreateBusinessAlertInfo(ctx context.Context, in *CreateBusinessAlertInfoReq, out *CreateBusinessAlertInfoResp) error
 	}
 	type AlertManager struct {
 		alertManager
 	}
 	h := &alertManagerHandler{hdlr}
 	opts = append(opts, api.WithEndpoint(&api.Endpoint{
-		Name:    "AlertManager.CreateAlertInfo",
-		Path:    []string{"/alertmanager/v1/alerts"},
+		Name:    "AlertManager.CreateRawAlertInfo",
+		Path:    []string{"/alertmanager/v1/rawalerts"},
+		Method:  []string{"POST"},
+		Body:    "*",
+		Handler: "rpc",
+	}))
+	opts = append(opts, api.WithEndpoint(&api.Endpoint{
+		Name:    "AlertManager.CreateBusinessAlertInfo",
+		Path:    []string{"/alertmanager/v1/businessalerts"},
 		Method:  []string{"POST"},
 		Body:    "*",
 		Handler: "rpc",
@@ -105,6 +133,10 @@ type alertManagerHandler struct {
 	AlertManagerHandler
 }
 
-func (h *alertManagerHandler) CreateAlertInfo(ctx context.Context, in *CreateAlertInfoReq, out *CreateAlertInfoResp) error {
-	return h.AlertManagerHandler.CreateAlertInfo(ctx, in, out)
+func (h *alertManagerHandler) CreateRawAlertInfo(ctx context.Context, in *CreateRawAlertInfoReq, out *CreateRawAlertInfoResp) error {
+	return h.AlertManagerHandler.CreateRawAlertInfo(ctx, in, out)
+}
+
+func (h *alertManagerHandler) CreateBusinessAlertInfo(ctx context.Context, in *CreateBusinessAlertInfoReq, out *CreateBusinessAlertInfoResp) error {
+	return h.AlertManagerHandler.CreateBusinessAlertInfo(ctx, in, out)
 }

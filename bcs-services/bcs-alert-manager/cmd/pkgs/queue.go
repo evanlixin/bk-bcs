@@ -25,10 +25,11 @@ import (
 	"github.com/Tencent/bk-bcs/bcs-common/common/blog"
 	"github.com/Tencent/bk-bcs/bcs-common/common/conf"
 	"github.com/Tencent/bk-bcs/bcs-common/pkg/msgqueue"
-	"github.com/Tencent/bk-bcs/bcs-services/bcs-alert-manager/config"
+	"github.com/Tencent/bk-bcs/bcs-services/bcs-alert-manager/cmd/config"
 )
 
 const (
+	// ConfigKey options queue
 	ConfigKey = "queue"
 )
 
@@ -37,7 +38,8 @@ var (
 	queueClient    msgqueue.MessageQueue
 )
 
-func GetQueueClient(options config.AlertManagerOptions) msgqueue.MessageQueue {
+// GetQueueClient get messageQueue interface
+func GetQueueClient(options *config.AlertManagerOptions) msgqueue.MessageQueue {
 	queueClineOnce.Do(func() {
 		config, err := parseQueueConfig(options)
 		if err != nil {
@@ -54,7 +56,7 @@ func GetQueueClient(options config.AlertManagerOptions) msgqueue.MessageQueue {
 }
 
 // ParseQueueConfig parse queue config
-func parseQueueConfig(options config.AlertManagerOptions) (*conf.Config, error) {
+func parseQueueConfig(options *config.AlertManagerOptions) (*conf.Config, error) {
 	queueConf := new(conf.Config)
 
 	if _, err := os.Stat(options.QueueConfig); !os.IsNotExist(err) {
