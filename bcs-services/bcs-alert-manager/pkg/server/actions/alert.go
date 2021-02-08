@@ -20,7 +20,7 @@ import (
 
 	"github.com/Tencent/bk-bcs/bcs-services/bcs-alert-manager/pkg/proto/alertmanager"
 	"github.com/Tencent/bk-bcs/bcs-services/bcs-alert-manager/pkg/remote/alert"
-	"github.com/Tencent/bk-bcs/bcs-services/bcs-alert-manager/pkg/server/service"
+	"github.com/Tencent/bk-bcs/bcs-services/bcs-alert-manager/pkg/server/utils"
 	"github.com/Tencent/bk-bcs/bcs-services/bcs-alert-manager/pkg/types"
 
 	"github.com/google/uuid"
@@ -46,7 +46,7 @@ func NewAlertAction(alertClient alert.BcsAlarmInterface) Console {
 
 // CreateRawAlertInfo create raw alert info
 func (ac *AlertAction) CreateRawAlertInfo(ctx context.Context, req *alertmanager.CreateRawAlertInfoReq, resp *alertmanager.CreateRawAlertInfoResp) {
-	tracer := service.GetTraceFromContext(ctx)
+	tracer := utils.GetTraceFromContext(ctx)
 
 	if req == nil || resp == nil {
 		errMsg := fmt.Sprintf("CreateRawAlertInfo req or resp is nil")
@@ -90,7 +90,7 @@ func (ac *AlertAction) CreateRawAlertInfo(ctx context.Context, req *alertmanager
 
 // CreateBusinessAlertInfo create business alert info
 func (ac *AlertAction) CreateBusinessAlertInfo(ctx context.Context, req *alertmanager.CreateBusinessAlertInfoReq, resp *alertmanager.CreateBusinessAlertInfoResp) {
-	tracer := service.GetTraceFromContext(ctx)
+	tracer := utils.GetTraceFromContext(ctx)
 
 	if req == nil || resp == nil {
 		errMsg := fmt.Sprintf("CreateRawAlertInfo req or resp is nil")

@@ -22,6 +22,7 @@ import (
 	"github.com/Tencent/bk-bcs/bcs-common/common/blog"
 	"github.com/Tencent/bk-bcs/bcs-services/bcs-alert-manager/pkg/proto/alertmanager"
 	"github.com/Tencent/bk-bcs/bcs-services/bcs-alert-manager/pkg/remote/metrics"
+	"github.com/Tencent/bk-bcs/bcs-services/bcs-alert-manager/pkg/server/utils"
 )
 
 const (
@@ -38,13 +39,13 @@ func (am *AlertManager) CreateRawAlertInfo(ctx context.Context,
 
 	start := time.Now()
 
-	headerInfo, err := GetRequestHeaderInfo(ctx)
+	headerInfo, err := utils.GetRequestHeaderInfo(ctx)
 	if err != nil {
 		blog.Errorf("get traceID failed from context: %v", err)
 		return err
 	}
-	ctx, tracer := WithTraceForContext(ctx, traceName, headerInfo.traceID)
-	tracer.DefaultRequestInEvent(headerInfo.clientIP, GrpcSchema, http.MethodPost)
+	ctx, tracer := utils.WithTraceForContext(ctx, traceName, headerInfo.TraceID)
+	tracer.DefaultRequestInEvent(headerInfo.ClientIP, GrpcSchema, http.MethodPost)
 	defer tracer.DefaultRequestOutEvent()
 
 	// console action
@@ -65,13 +66,13 @@ func (am *AlertManager) CreateBusinessAlertInfo(ctx context.Context,
 
 	start := time.Now()
 
-	headerInfo, err := GetRequestHeaderInfo(ctx)
+	headerInfo, err := utils.GetRequestHeaderInfo(ctx)
 	if err != nil {
 		blog.Errorf("get traceID failed from context: %v", err)
 		return err
 	}
-	ctx, tracer := WithTraceForContext(ctx, traceName, headerInfo.traceID)
-	tracer.DefaultRequestInEvent(headerInfo.clientIP, GrpcSchema, http.MethodPost)
+	ctx, tracer := utils.WithTraceForContext(ctx, traceName, headerInfo.TraceID)
+	tracer.DefaultRequestInEvent(headerInfo.ClientIP, GrpcSchema, http.MethodPost)
 	defer tracer.DefaultRequestOutEvent()
 
 	// console action

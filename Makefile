@@ -134,14 +134,6 @@ storage:pre
 	cp -R ./install/conf/bcs-services/bcs-storage ${PACKAGEPATH}/bcs-services
 	go build ${LDFLAG} -o ${PACKAGEPATH}/bcs-services/bcs-storage/bcs-storage ./bcs-services/bcs-storage/storage.go
 
-bcs-alert-manager:pre
-	mkdir -p ${PACKAGEPATH}/bcs-services
-	cp -R ./install/conf/bcs-services/bcs-alert-manager ${PACKAGEPATH}/bcs-services
-	mkdir -p ${PACKAGEPATH}/bcs-services/bcs-alert-manager/swagger
-	cp -R ./bcs-services/bcs-alert-manager/pkg/third_party/swagger-ui ${PACKAGEPATH}/bcs-services/bcs-alert-manager/swagger/swagger-ui
-	cp -R ./bcs-services/bcs-alert-manager/pkg/proto/alertmanager/alertmanager.swagger.json ${PACKAGEPATH}/bcs-services/bcs-alert-manager/swagger/alertmanager.swagger.json
-	go build ${LDFLAG} -o ${PACKAGE}/bcs-services/bcs-alert-manager/bcs-alert-manager ./bcs-services/bcs-alert-manager/main.go
-
 loadbalance:pre
 	go build ${LDFLAG} -o ${PACKAGEPATH}/bcs-services/bcs-loadbalance/bcs-loadbalance ./bcs-services/bcs-loadbalance/main.go
 	cp -r ./bcs-services/bcs-loadbalance/image/* ${PACKAGEPATH}/bcs-services/bcs-loadbalance/
@@ -325,3 +317,6 @@ bcs-cloud-netagent:pre
 
 bcs-ingress-controller:pre
 	cd ./bcs-network && make ingress-controller && cd -
+
+bcs-alert-manager:pre
+	cd ./bcs-services/bcs-alert-manager && make bcs-alert-manager && cd -

@@ -11,21 +11,22 @@
  *
  */
 
-package service
+package utils
 
 import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/google/uuid"
-	"google.golang.org/grpc/peer"
 	"net"
 	"strings"
 	"time"
 
 	"github.com/Tencent/bk-bcs/bcs-common/common/blog"
 	"github.com/Tencent/bk-bcs/bcs-common/common/blog/glog"
+
+	"github.com/google/uuid"
 	grpcmeta "google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/peer"
 )
 
 const (
