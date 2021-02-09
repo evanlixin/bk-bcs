@@ -27,13 +27,13 @@ const (
 var (
 	// alert_manager grpc request action metrics
 	requestTotalAPI = prometheus.NewCounterVec(prometheus.CounterOpts{
-		Namespace: "bkbcs_alert-manager",
+		Namespace: "bkbcs_alertmanager",
 		Subsystem: "api",
 		Name:      "request_total_num",
 		Help:      "The total num of requests for alertmanager api",
 	}, []string{"handler", "method", "status"})
 	requestLatencyAPI = prometheus.NewHistogramVec(prometheus.HistogramOpts{
-		Namespace: "bkbcs_alert-manager",
+		Namespace: "bkbcs_alertmanager",
 		Subsystem: "api",
 		Name:      "request_latency_time",
 		Help:      "api request latency statistic for alertmanager api",
@@ -42,15 +42,15 @@ var (
 
 	// external http requests action metrics
 	requestsTotalAlert = prometheus.NewCounterVec(prometheus.CounterOpts{
-		Namespace: "bkbcs_alert-manager",
-		Subsystem: "alert-system",
+		Namespace: "bkbcs_alertmanager",
+		Subsystem: "alert",
 		Name:      "request_total_num",
 		Help:      "The total number of requests to alert-system api",
 	}, []string{"handler", "path", "method", "status"})
 
 	requestLatencyAlert = prometheus.NewHistogramVec(prometheus.HistogramOpts{
-		Namespace: "bkbcs_alert-manager",
-		Subsystem: "alert-system",
+		Namespace: "bkbcs_alertmanager",
+		Subsystem: "alert",
 		Name:      "request_latency_time",
 		Help:      "request latency time for call alert-system api",
 		Buckets:   []float64{0.0005, 0.001, 0.0025, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.0, 3.0},
