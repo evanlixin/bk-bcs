@@ -21,14 +21,14 @@ import (
 type AlertManagerOptions struct {
 	conf.FileConfig
 
-	ServiceOptions     ServiceConfig       `json:"serviceOptions"`
-	ClientTLSConfig    ClientTLSConfig     `json:"clientTLSConfig"`
-	SwaggerConfigDir   SwaggerConfig       `json:"swaggerConfigDir"`
-	LogOptions         conf.LogConfig      `json:"logOptions"`
-	EtcdOptions        *EtcdOptions        `json:"etcdOptions"`
-	AlertServerOptions *AlertServerOptions `json:"alertServerOptions"`
-	QueueConfig        string              `json:"queue_config_file" value:"queue.conf" usage:"Config file for queue."`
-	DebugMode          bool                `json:"debug_mode" value:"false" usage:"Debug mode, use pprof."`
+	ServiceOptions     ServiceConfig      `json:"serviceOptions"`
+	ClientTLSConfig    ClientTLSConfig    `json:"clientTLSConfig"`
+	SwaggerConfigDir   SwaggerConfig      `json:"swaggerConfigDir"`
+	LogOptions         conf.LogConfig     `json:"logOptions"`
+	EtcdOptions        EtcdOptions        `json:"etcdOptions"`
+	AlertServerOptions AlertServerOptions `json:"alertServerOptions"`
+	QueueConfig        string             `json:"queue_config_file" value:"queue.conf" usage:"Config file for queue."`
+	DebugMode          bool               `json:"debug_mode" value:"false" usage:"Debug mode, use pprof."`
 
 	ResourceSubs []ResourceSubType `json:"resourceSubs" value:"" usage:"ResourceSubs consumer"`
 }
