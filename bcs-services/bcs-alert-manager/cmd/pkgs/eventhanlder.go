@@ -14,6 +14,7 @@
 package pkgs
 
 import (
+	"github.com/Tencent/bk-bcs/bcs-common/common/blog"
 	"sync"
 
 	"github.com/Tencent/bk-bcs/bcs-services/bcs-alert-manager/cmd/config"
@@ -40,6 +41,7 @@ func GetEventSyncHandler(options *config.AlertManagerOptions) *eventhandler.Sync
 		if eventHandler == nil {
 			panic("init NewSyncEventHandler failed")
 		}
+		blog.Infof("init EventSyncHandler successful")
 	})
 
 	return eventHandler

@@ -14,6 +14,7 @@
 package pkgs
 
 import (
+	"github.com/Tencent/bk-bcs/bcs-common/common/blog"
 	"strings"
 
 	"github.com/Tencent/bk-bcs/bcs-common/pkg/msgqueue"
@@ -34,7 +35,7 @@ const (
 // GetFactoryConsumers init consumer object according to resourceSubInfo
 func GetFactoryConsumers(options *config.AlertManagerOptions) []consumer.Consumer {
 	resourceSubInfo := parseResourceSubs(options)
-	consumers := make([]consumer.Consumer, len(resourceSubInfo))
+	var consumers []consumer.Consumer
 
 	for resource, switchKey := range resourceSubInfo {
 		if strings.EqualFold(switchKey, string(ResourceSubOn)) {
@@ -68,5 +69,6 @@ func parseResourceSubs(options *config.AlertManagerOptions) map[string]string {
 		}
 	}
 
+	blog.Infof("parseResourceSubs %v", resourceSubs)
 	return resourceSubs
 }
