@@ -28,7 +28,7 @@ var (
 // GetAlertClient for init alert system client
 func GetAlertClient(options *config.AlertManagerOptions) alert.BcsAlarmInterface {
 	alertClientOnce.Do(func() {
-		alertClient = alert.NewAlertServer(options.AlertServerOptions)
+		alertClient = alert.NewAlertServer(&options.AlertServerOptions)
 		if alertClient == nil {
 			panic("init alertClient failed")
 		}
