@@ -212,7 +212,7 @@ func (am *AlertManager) initPProf(router *mux.Router) {
 }
 
 // init swagger server file
-func (am *AlertManager) initServerSwaggerFile(router *mux.Router) {
+func (am *AlertManager) initServerSwaggerFile(mux *http.ServeMux) {
 	if am == nil {
 		return
 	}
@@ -220,17 +220,11 @@ func (am *AlertManager) initServerSwaggerFile(router *mux.Router) {
 	if len(am.options.SwaggerConfigDir.Dir) != 0 {
 		blog.Infof("swagger config dir is enabled")
 
-		router.HandleFunc("/swagger/", am.serveSwaggerFile)
+		mux.HandleFunc("/swagger/", am.serveSwaggerFile)
 	}
 }
 
 func (am *AlertManager) serveSwaggerFile(w http.ResponseWriter, r *http.Request) {
-	if !strings.HasSuffix(r.URL.Path, "swagger.json") {
-		blog.Errorf("Not Found: %s", r.URL.Path)
-		http.NotFound(w, r)
-		return
-	}
-
 	swaggerFile := path.Join(am.options.SwaggerConfigDir.Dir, strings.TrimPrefix(r.URL.Path, "/swagger/"))
 	blog.Infof("Serving swagger-file: %s", swaggerFile)
 
@@ -336,15 +330,17 @@ func (am *AlertManager) initExtraHTTPServer() error {
 	}
 
 	router := mux.NewRouter()
-
 	am.initMetrics(router)
 	am.initPProf(router)
-	am.initServerSwaggerFile(router)
+
+	mux := http.NewServeMux()
+	mux.Handle("/", router)
+	am.initServerSwaggerFile(mux)
 
 	extraAddress := am.options.ServiceOptions.Address + ":" + strconv.Itoa(int(am.options.ServiceOptions.MetricPort))
 	am.extraServer = &http.Server{
 		Addr:    extraAddress,
-		Handler: router,
+		Handler: mux,
 	}
 
 	go func() {

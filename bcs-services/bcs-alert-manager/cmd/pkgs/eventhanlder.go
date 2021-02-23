@@ -24,6 +24,8 @@ import (
 const (
 	// alert-system interface concurrency
 	EventHandleConcurrencyNum = 100
+	// alert-system handle batch EventNum
+	EventHandleAlertEventNum = 100
 )
 
 var (
@@ -35,8 +37,9 @@ var (
 func GetEventSyncHandler(options *config.AlertManagerOptions) *eventhandler.SyncEventHandler {
 	eventHandlerOnce.Do(func() {
 		eventHandler = eventhandler.NewSyncEventHandler(eventhandler.Options{
-			ConcurrencyNum: EventHandleConcurrencyNum,
-			Client:         GetAlertClient(options),
+			AlertEventBatchNum: EventHandleAlertEventNum,
+			ConcurrencyNum:     EventHandleConcurrencyNum,
+			Client:             GetAlertClient(options),
 		})
 		if eventHandler == nil {
 			panic("init NewSyncEventHandler failed")

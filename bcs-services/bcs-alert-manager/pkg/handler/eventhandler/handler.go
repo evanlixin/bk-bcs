@@ -16,6 +16,7 @@ package eventhandler
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"time"
 
 	glog "github.com/Tencent/bk-bcs/bcs-common/common/blog"
@@ -33,19 +34,21 @@ const (
 
 // SyncEventHandler event handler
 type SyncEventHandler struct {
-	unSub        func()
-	stopCtx      context.Context
-	stopCancel   context.CancelFunc
-	alertClient  alert.BcsAlarmInterface
-	eventListCh  chan *msgqueue.HandlerData
-	filters      []msgqueue.Filter
-	alertBarrier *concurrency.Concurrency
+	unSub         func()
+	stopCtx       context.Context
+	stopCancel    context.CancelFunc
+	alertClient   alert.BcsAlarmInterface
+	eventListCh   chan *msgqueue.HandlerData
+	filters       []msgqueue.Filter
+	alertBarrier  *concurrency.Concurrency
+	alertBatchNum int
 }
 
 // Options for eventHandler
 type Options struct {
-	ConcurrencyNum int
-	Client         alert.BcsAlarmInterface
+	AlertEventBatchNum int
+	ConcurrencyNum     int
+	Client             alert.BcsAlarmInterface
 }
 
 // NewSyncEventHandler create event handler object
@@ -53,12 +56,95 @@ func NewSyncEventHandler(opt Options) *SyncEventHandler {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	return &SyncEventHandler{
-		stopCtx:      ctx,
-		stopCancel:   cancel,
-		alertClient:  opt.Client,
-		eventListCh:  make(chan *msgqueue.HandlerData, 1024),
-		alertBarrier: concurrency.NewConcurrency(opt.ConcurrencyNum),
+		stopCtx:       ctx,
+		stopCancel:    cancel,
+		alertClient:   opt.Client,
+		eventListCh:   make(chan *msgqueue.HandlerData, 1024),
+		alertBarrier:  concurrency.NewConcurrency(opt.ConcurrencyNum),
+		alertBatchNum: opt.AlertEventBatchNum,
 	}
+}
+
+func (eh *SyncEventHandler) backgroundBatchSync() {
+	ticker := time.NewTicker(time.Second)
+	defer ticker.Stop()
+
+	alertEventList := []*msgqueue.HandlerData{}
+	for {
+		select {
+		case <-eh.stopCtx.Done():
+			glog.Info("backgroundSync has been stopped")
+			return
+		case event := <- eh.eventListCh:
+			alertEventList = append(alertEventList, event)
+			if len(alertEventList) < eh.alertBatchNum {
+				continue
+			}
+		case <-ticker.C:
+		}
+
+		if len(alertEventList) == 0 {
+			continue
+		}
+
+		eh.alertBarrier.Add()
+		go func(eventList []*msgqueue.HandlerData) {
+			defer eh.alertBarrier.Done()
+			defer func() {
+				if r := recover(); r != nil {
+					glog.Errorf("[monitor][event] panic: %v\n", r)
+				}
+			}()
+
+			alertReqDataList := eh.transEventListToAlertData(eventList)
+			if len(alertReqDataList) == 0 {
+				return
+			}
+
+			fmt.Println(alertReqDataList)
+			err := eh.alertClient.SendAlarmInfoToAlertServer(alertReqDataList, time.Second*10)
+			if err != nil {
+				glog.Errorf("event handler backgroundSync sendEvenDataToAlert failed: %v", err)
+			}
+
+		}(alertEventList)
+
+		alertEventList = nil
+	}
+}
+
+func (eh *SyncEventHandler) transEventListToAlertData(eventList []*msgqueue.HandlerData) []alert.AlarmReqData {
+	alarmDataList := []alert.AlarmReqData{}
+
+	if len(eventList) == 0 {
+		return alarmDataList
+	}
+
+	for i := range eventList {
+		if len(eventList[i].Body) == 0 {
+			continue
+		}
+
+		// parse event meta
+		uuid := uuid.New().String()
+		annotations := map[string]string{
+			string(alert.AlarmAnnotationsUUID): uuid,
+			string(alert.AlarmAnnotationsBody): string(eventList[i].Body),
+		}
+		labels := eventList[i].Meta
+		// must "project_id"
+		if _, ok := labels[string(alert.AlarmLabelsAlarmProjectID)]; !ok {
+			labels[string(alert.AlarmLabelsAlarmProjectID)] = alert.DefaultAlarmProjectID
+		}
+
+		alarmDataList = append(alarmDataList, alert.AlarmReqData{
+			StartsTime:  time.Now(),
+			Annotations: annotations,
+			Labels:      labels,
+		})
+	}
+
+	return alarmDataList
 }
 
 func (eh *SyncEventHandler) backgroundSync() {
@@ -99,6 +185,10 @@ func (eh *SyncEventHandler) sendEvenDataToAlert(event *msgqueue.HandlerData) err
 		string(alert.AlarmAnnotationsBody): string(event.Body),
 	}
 	labels := event.Meta
+	// must "project_id"
+	if _, ok := labels[string(alert.AlarmLabelsAlarmProjectID)]; !ok {
+		labels[string(alert.AlarmLabelsAlarmProjectID)] = alert.DefaultAlarmProjectID
+	}
 
 	data := []alert.AlarmReqData{
 		{
@@ -166,7 +256,8 @@ func (eh *SyncEventHandler) Consume(ctx context.Context, sub msgqueue.MessageQue
 		unSub.Unsubscribe()
 	}
 
-	go eh.backgroundSync()
+	// go eh.backgroundSync()
+	go eh.backgroundBatchSync()
 
 	return nil
 }

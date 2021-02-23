@@ -35,12 +35,12 @@ func connectQueue() (msgqueue.MessageQueue, error) {
 			QueueFlag:       true,
 			QueueKind:       "rabbitmq",
 			ResourceToQueue: resourceToQueue,
-			Address:         "amqp://rabbit:rabbit@127.0.0.1:5672",
+			Address:         "amqp://root:123456@9.135.101.193:5672", /*"amqp://rabbit:rabbit@127.0.0.1:5672"*/
 		})
 
 	exchangeOpts := msgqueue.Exchange(
 		&msgqueue.ExchangeOptions{
-			Name:           "bcs-storage-test",
+			Name:           "bcs-storage", //"bcs-storage-test",
 			Durable:        true,
 			PrefetchCount:  0,
 			PrefetchGlobal: false,
@@ -73,7 +73,7 @@ func connectQueue() (msgqueue.MessageQueue, error) {
 	return queue, err
 }
 
-func alertClient() alert.BcsAlarmInterface{
+func alertClient() alert.BcsAlarmInterface {
 	defaultOptions := &config.AlertServerOptions{
 		Server:      "http://bcs-monitor.apigw.o.oa.com",
 		AppCode:     "app-alarm-test",
@@ -86,8 +86,9 @@ func alertClient() alert.BcsAlarmInterface{
 
 func getEventHandler() *eventhandler.SyncEventHandler {
 	eventHandler := eventhandler.NewSyncEventHandler(eventhandler.Options{
-		ConcurrencyNum: 100,
-		Client:         alertClient(),
+		AlertEventBatchNum: 100,
+		ConcurrencyNum:     100,
+		Client:             alertClient(),
 	})
 
 	return eventHandler
@@ -104,5 +105,5 @@ func TestConsumers_Run(t *testing.T) {
 	consumer := NewConsumers(consumers, queue)
 	consumer.Run()
 
-	select{}
+	select {}
 }

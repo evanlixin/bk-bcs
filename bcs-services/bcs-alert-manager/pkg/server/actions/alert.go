@@ -64,6 +64,11 @@ func (ac *AlertAction) CreateRawAlertInfo(ctx context.Context, req *alertmanager
 		return
 	}
 
+	// must "project_id"
+	if _, ok := req.Labels[string(alert.AlarmLabelsAlarmProjectID)]; !ok {
+		req.Labels[string(alert.AlarmLabelsAlarmProjectID)] = alert.DefaultAlarmProjectID
+	}
+
 	alertDataList := []alert.AlarmReqData{
 		alert.AlarmReqData{
 			StartsTime:   timeUnixToTime(req.Starttime),
@@ -143,6 +148,10 @@ func (ac *AlertAction) CreateBusinessAlertInfo(ctx context.Context, req *alertma
 		resp.ErrCode = types.BcsErrAlertManagerInvalidParameter
 		resp.ErrMsg = fmt.Sprintf("invalid alarmType, please input[resource|module]")
 		return
+	}
+
+	if _, ok := alertData.Labels[string(alert.AlarmLabelsAlarmProjectID)]; !ok {
+		alertData.Labels[string(alert.AlarmLabelsAlarmProjectID)] = alert.DefaultAlarmProjectID
 	}
 
 	err = ac.alertClient.SendAlarmInfoToAlertServer([]alert.AlarmReqData{alertData}, time.Second*10)

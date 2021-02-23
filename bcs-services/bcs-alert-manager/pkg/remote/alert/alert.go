@@ -27,6 +27,10 @@ import (
 	"github.com/parnurzeal/gorequest"
 )
 
+const (
+	DefaultAlarmProjectID = "5805f1b824134fa39318fb0cf59f694b"
+)
+
 // AlarmReqData request alertServer body
 type AlarmReqData struct {
 	StartsTime   time.Time         `json:"starts_time"`

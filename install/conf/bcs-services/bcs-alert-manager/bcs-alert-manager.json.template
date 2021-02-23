@@ -32,6 +32,10 @@
 },
 "queue_config_file": "${bcsAlertManagerQueue}",
 "debug_mode": ${bcsAlertManagerDebug},
+"handler_config": {
+    "concurrencyNum": ${bcsAlertConcurrencyNum},
+    "alertEventNum": ${bcsAlertAlarmEventNum}
+},
 "resourceSubs" : [
 	{
 		"switch": "${bcsAlertManagerResourceSwitch}",
@@ -39,3 +43,5 @@
 	}
 ]
 }
+ConcurrencyNum int `json:"concurrencyNum"`
+	AlertEventNum  int `json:"alertEventNum"`

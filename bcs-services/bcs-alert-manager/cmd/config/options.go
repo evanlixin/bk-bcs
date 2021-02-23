@@ -29,6 +29,7 @@ type AlertManagerOptions struct {
 	AlertServerOptions AlertServerOptions `json:"alertServerOptions"`
 	QueueConfig        string             `json:"queue_config_file" value:"queue.conf" usage:"Config file for queue."`
 	DebugMode          bool               `json:"debug_mode" value:"false" usage:"Debug mode, use pprof."`
+	HandlerConfig      HandlerOptions     `json:"handler_config"`
 
 	ResourceSubs []ResourceSubType `json:"resourceSubs" value:"" usage:"ResourceSubs consumer"`
 }
@@ -76,6 +77,17 @@ type AlertServerOptions struct {
 type ResourceSubType struct {
 	Switch   string `json:"switch"`
 	Category string `json:"category"`
+}
+
+// HandlerOptions for all handler options
+type HandlerOptions struct {
+	EventHandlerOptions
+}
+
+// EventHandlerOptions for event handler options
+type EventHandlerOptions struct {
+	ConcurrencyNum int `json:"concurrencyNum"`
+	AlertEventNum  int `json:"alertEventNum"`
 }
 
 // NewAlertManagerOptions create AlertManagerOptions object

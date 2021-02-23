@@ -50,7 +50,7 @@ func GetTraceFromContext(ctx context.Context) Trace {
 // WithTraceForContext will return a new context wrapped a trace handler around the original ctx
 func WithTraceForContext(ctx context.Context, traceName string, traceID string) (context.Context, Trace) {
 	tracer := NewTraceInfo(traceID, traceName)
-	return context.WithValue(ctx, TraceHandlerKey{}, traceName), tracer
+	return context.WithValue(ctx, TraceHandlerKey{}, tracer), tracer
 }
 
 // Trace log trace based on blog, used to trace a http request

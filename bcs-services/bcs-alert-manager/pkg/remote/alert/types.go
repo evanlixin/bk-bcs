@@ -65,13 +65,16 @@ const (
 
 	// AlarmLabelsAlarmLevel labels level
 	AlarmLabelsAlarmLevel AlarmLabelsKey = "alarm_level"
+
+	// AlarmLabelsAlarmProjectID
+	AlarmLabelsAlarmProjectID AlarmLabelsKey = "project_id"
 )
 
 const (
 	// Resource show resource kind
 	Resource = "resource"
 	// Module show module kind
-	Module   = "module"
+	Module = "module"
 )
 
 // AlertServer ErrInfo
