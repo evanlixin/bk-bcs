@@ -16,7 +16,6 @@ package eventhandler
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"time"
 
 	glog "github.com/Tencent/bk-bcs/bcs-common/common/blog"
@@ -38,7 +37,7 @@ type SyncEventHandler struct {
 	stopCtx       context.Context
 	stopCancel    context.CancelFunc
 	alertClient   alert.BcsAlarmInterface
-	eventListCh   chan *msgqueue.HandlerData
+	eventListCh   chan msgqueue.HandlerData
 	filters       []msgqueue.Filter
 	alertBarrier  *concurrency.Concurrency
 	alertBatchNum int
@@ -59,7 +58,7 @@ func NewSyncEventHandler(opt Options) *SyncEventHandler {
 		stopCtx:       ctx,
 		stopCancel:    cancel,
 		alertClient:   opt.Client,
-		eventListCh:   make(chan *msgqueue.HandlerData, 1024),
+		eventListCh:   make(chan msgqueue.HandlerData, 1024),
 		alertBarrier:  concurrency.NewConcurrency(opt.ConcurrencyNum),
 		alertBatchNum: opt.AlertEventBatchNum,
 	}
@@ -69,13 +68,13 @@ func (eh *SyncEventHandler) backgroundBatchSync() {
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
 
-	alertEventList := []*msgqueue.HandlerData{}
+	alertEventList := []msgqueue.HandlerData{}
 	for {
 		select {
 		case <-eh.stopCtx.Done():
-			glog.Info("backgroundSync has been stopped")
+			glog.Info("backgroundBatchSync has been stopped")
 			return
-		case event := <- eh.eventListCh:
+		case event := <-eh.eventListCh:
 			alertEventList = append(alertEventList, event)
 			if len(alertEventList) < eh.alertBatchNum {
 				continue
@@ -88,7 +87,7 @@ func (eh *SyncEventHandler) backgroundBatchSync() {
 		}
 
 		eh.alertBarrier.Add()
-		go func(eventList []*msgqueue.HandlerData) {
+		go func(eventList []msgqueue.HandlerData) {
 			defer eh.alertBarrier.Done()
 			defer func() {
 				if r := recover(); r != nil {
@@ -101,7 +100,7 @@ func (eh *SyncEventHandler) backgroundBatchSync() {
 				return
 			}
 
-			fmt.Println(alertReqDataList)
+			//fmt.Println(alertReqDataList)
 			err := eh.alertClient.SendAlarmInfoToAlertServer(alertReqDataList, time.Second*10)
 			if err != nil {
 				glog.Errorf("event handler backgroundSync sendEvenDataToAlert failed: %v", err)
@@ -109,11 +108,11 @@ func (eh *SyncEventHandler) backgroundBatchSync() {
 
 		}(alertEventList)
 
-		alertEventList = nil
+		alertEventList = []msgqueue.HandlerData{}
 	}
 }
 
-func (eh *SyncEventHandler) transEventListToAlertData(eventList []*msgqueue.HandlerData) []alert.AlarmReqData {
+func (eh *SyncEventHandler) transEventListToAlertData(eventList []msgqueue.HandlerData) []alert.AlarmReqData {
 	alarmDataList := []alert.AlarmReqData{}
 
 	if len(eventList) == 0 {
@@ -158,7 +157,7 @@ func (eh *SyncEventHandler) backgroundSync() {
 		}
 
 		eh.alertBarrier.Add()
-		go func(event *msgqueue.HandlerData) {
+		go func(event msgqueue.HandlerData) {
 			defer eh.alertBarrier.Done()
 			defer func() {
 				if r := recover(); r != nil {
@@ -173,7 +172,7 @@ func (eh *SyncEventHandler) backgroundSync() {
 	}
 }
 
-func (eh *SyncEventHandler) sendEvenDataToAlert(event *msgqueue.HandlerData) error {
+func (eh *SyncEventHandler) sendEvenDataToAlert(event msgqueue.HandlerData) error {
 
 	if len(event.Body) == 0 {
 		return nil
@@ -232,7 +231,7 @@ func (eh *SyncEventHandler) HandleQueueEvent(ctx context.Context, data []byte) e
 	}
 
 	select {
-	case eh.eventListCh <- eventHandlerData:
+	case eh.eventListCh <- *eventHandlerData:
 	case <-time.After(time.Second * 1):
 		glog.Info("handle queue event has been discarded")
 	}
@@ -265,9 +264,9 @@ func (eh *SyncEventHandler) Consume(ctx context.Context, sub msgqueue.MessageQue
 // Stop close chanQueue & unSub
 func (eh *SyncEventHandler) Stop() error {
 	eh.unSub()
+	eh.stopCancel()
 	close(eh.eventListCh)
 	time.Sleep(time.Second * 3)
-	eh.stopCancel()
 
 	return nil
 }
