@@ -81,6 +81,7 @@ func initQueueClient(queueConf config.QueueConfig) (msgqueue.MessageQueue, error
 			DeliveryMode: uint8(queueConf.PublishDelivery),
 		})
 
+	arguments := parseQueueArguments(queueConf.QueueArguments)
 	subscribeOption := msgqueue.SubscribeOpts(
 		&msgqueue.SubscribeOptions{
 			DisableAutoAck:    queueConf.SubDisableAutoAck,
@@ -92,7 +93,7 @@ func initQueueClient(queueConf config.QueueConfig) (msgqueue.MessageQueue, error
 			EnableAckWait:     queueConf.SubEnableAckWait,
 			AckWaitDuration:   time.Duration(queueConf.SubAckWaitDuration) * time.Second,
 			MaxInFlight:       queueConf.SubMaxInFlight,
-			QueueArguments:    queueConf.QueueArguments,
+			QueueArguments:    arguments,
 		})
 
 	queueOptions = append(queueOptions, commonOption, natStreamingOption, exchangeOption, publishOption, subscribeOption)
@@ -107,4 +108,20 @@ func initQueueClient(queueConf config.QueueConfig) (msgqueue.MessageQueue, error
 
 	blog.Infof("init queueClient[%s] successfully", queueKind)
 	return queueClient, nil
+}
+
+// https://github.com/streadway/amqp/blob/master/channel.go
+// amqp channel.go: QueueDeclare limit value type: nil, bool, byte, int, int16, int32, int64, float32, float64, string, []byte, Decimal, time.Time
+func parseQueueArguments(queueArguments map[string]interface{}) map[string]interface{} {
+	arguments := map[string]interface{}{}
+
+	for key, value := range queueArguments {
+		if v, ok := value.(uint64); ok {
+			arguments[key] = int64(v)
+		} else {
+			arguments[key] = value
+		}
+	}
+
+	return arguments
 }
