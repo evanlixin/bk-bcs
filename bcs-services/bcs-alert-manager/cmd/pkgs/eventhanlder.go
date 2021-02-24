@@ -37,9 +37,19 @@ var (
 func GetEventSyncHandler(options *config.AlertManagerOptions) *eventhandler.SyncEventHandler {
 	eventHandlerOnce.Do(func() {
 		eventHandler = eventhandler.NewSyncEventHandler(eventhandler.Options{
-			AlertEventBatchNum: EventHandleAlertEventNum,
-			ConcurrencyNum:     EventHandleConcurrencyNum,
-			Client:             GetAlertClient(options),
+			AlertEventBatchNum: func() int {
+				if options.HandlerConfig.AlertEventNum <= 0 {
+					return EventHandleAlertEventNum
+				}
+				return options.HandlerConfig.AlertEventNum
+			}(),
+			ConcurrencyNum: func() int {
+				if options.HandlerConfig.ConcurrencyNum <= 0 {
+					return EventHandleConcurrencyNum
+				}
+				return options.HandlerConfig.ConcurrencyNum
+			}(),
+			Client: GetAlertClient(options),
 		})
 		if eventHandler == nil {
 			panic("init NewSyncEventHandler failed")

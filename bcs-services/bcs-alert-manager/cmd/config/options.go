@@ -27,11 +27,46 @@ type AlertManagerOptions struct {
 	LogOptions         conf.LogConfig     `json:"logOptions"`
 	EtcdOptions        EtcdOptions        `json:"etcdOptions"`
 	AlertServerOptions AlertServerOptions `json:"alertServerOptions"`
-	QueueConfig        string             `json:"queue_config_file" value:"queue.conf" usage:"Config file for queue."`
 	DebugMode          bool               `json:"debug_mode" value:"false" usage:"Debug mode, use pprof."`
 	HandlerConfig      HandlerOptions     `json:"handler_config"`
 
 	ResourceSubs []ResourceSubType `json:"resourceSubs" value:"" usage:"ResourceSubs consumer"`
+	QueueConfig  QueueConfig       `json:"queue_config"`
+}
+
+// QueueConfig option for queue
+type QueueConfig struct {
+	// commonOpts
+	QueueFlag bool   `json:"queueFlag"`
+	QueueKind string `json:"queueKind"`
+	Resource  string `json:"resource"`
+	Address   string `json:"address"`
+
+	// exchangeOpts
+	ExchangeName           string `json:"exchangeName"`
+	ExchangeDurable        bool   `json:"exchangeDurable"`
+	ExchangePrefetchCount  int    `json:"exchangePrefetchCount"`
+	ExchangePrefetchGlobal bool   `json:"exchangePrefetchGlobal"`
+
+	// nats-streaming
+	ClusterID      string `json:"clusterID"`
+	ConnectTimeout int    `json:"connectTimeout"`
+	ConnectRetry   bool   `json:"connectRetry"`
+
+	// publishOpts
+	PublishDelivery int `json:"publishDelivery"`
+
+	// subscribeOpts
+	SubDurable           bool                   `json:"subDurable"`
+	SubDisableAutoAck    bool                   `json:"subDisableAutoAck"`
+	SubAckOnSuccess      bool                   `json:"subAckOnSuccess"`
+	SubRequeueOnError    bool                   `json:"subRequeueOnError"`
+	SubDeliverAllMessage bool                   `json:"subDeliverAllMessage"`
+	SubManualAckMode     bool                   `json:"subManualAckMode"`
+	SubEnableAckWait     bool                   `json:"subEnableAckWait"`
+	SubAckWaitDuration   int                    `json:"subAckWaitDuration"`
+	SubMaxInFlight       int                    `json:"subMaxInFlight"`
+	QueueArguments       map[string]interface{} `json:"queueArguments"`
 }
 
 // SwaggerConfig option for swagger
