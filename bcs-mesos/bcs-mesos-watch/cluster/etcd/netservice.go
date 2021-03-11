@@ -29,6 +29,7 @@ import (
 	"github.com/Tencent/bk-bcs/bcs-mesos/bcs-mesos-watch/cluster"
 	"github.com/Tencent/bk-bcs/bcs-mesos/bcs-mesos-watch/service"
 	"github.com/Tencent/bk-bcs/bcs-mesos/bcs-mesos-watch/types"
+	"github.com/Tencent/bk-bcs/bcs-mesos/bcs-mesos-watch/util"
 )
 
 const (
@@ -46,11 +47,11 @@ const (
 )
 
 func reportIPPoolStaticMetrics(action, status string) {
-	cluster.SyncTotal.WithLabelValues(cluster.DataTypeIPPoolStatic, action, status).Inc()
+	util.ReportSyncTotal(cluster.DataTypeIPPoolStatic, action, status)
 }
 
 func reportIPPoolStaticDetailMetrics(action, status string) {
-	cluster.SyncTotal.WithLabelValues(cluster.DataTypeIPPoolStaticDetail, action, status).Inc()
+	util.ReportSyncTotal(cluster.DataTypeIPPoolStaticDetail, action, status)
 }
 
 // NetServiceWatcher watchs resources in netservice, and sync to storage.

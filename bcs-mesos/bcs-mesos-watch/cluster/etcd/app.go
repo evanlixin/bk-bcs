@@ -14,13 +14,6 @@
 package etcd
 
 import (
-	"github.com/Tencent/bk-bcs/bcs-common/common/blog"
-	schedulertypes "github.com/Tencent/bk-bcs/bcs-common/pkg/scheduler/schetypes"
-	"github.com/Tencent/bk-bcs/bcs-mesos/bcs-mesos-watch/cluster"
-	"github.com/Tencent/bk-bcs/bcs-mesos/bcs-mesos-watch/types"
-	"github.com/Tencent/bk-bcs/bcs-mesos/bcs-mesos-watch/util"
-	"github.com/Tencent/bk-bcs/bcs-mesos/kubebkbcsv2/apis/bkbcs/v2"
-	bkbcsv2 "github.com/Tencent/bk-bcs/bcs-mesos/kubebkbcsv2/client/informers/bkbcs/v2"
 	"os"
 	"strconv"
 	"sync"
@@ -28,17 +21,25 @@ import (
 	"golang.org/x/net/context"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/tools/cache"
+
+	"github.com/Tencent/bk-bcs/bcs-common/common/blog"
+	schedulertypes "github.com/Tencent/bk-bcs/bcs-common/pkg/scheduler/schetypes"
+	"github.com/Tencent/bk-bcs/bcs-mesos/bcs-mesos-watch/cluster"
+	"github.com/Tencent/bk-bcs/bcs-mesos/bcs-mesos-watch/types"
+	"github.com/Tencent/bk-bcs/bcs-mesos/bcs-mesos-watch/util"
+	"github.com/Tencent/bk-bcs/bcs-mesos/kubebkbcsv2/apis/bkbcs/v2"
+	bkbcsv2 "github.com/Tencent/bk-bcs/bcs-mesos/kubebkbcsv2/client/informers/bkbcs/v2"
 )
+
+func reportAppMetrics(action, status string) {
+	util.ReportSyncTotal(cluster.DataTypeApp, action, status)
+}
 
 //NSControlInfo store all app info under one namespace
 type NSControlInfo struct {
 	path   string             //parent zk node, namespace absolute path
 	cxt    context.Context    //context for creating sub context
 	cancel context.CancelFunc //for cancel sub goroutine
-}
-
-func reportAppMetrics(action, status string) {
-	cluster.SyncTotal.WithLabelValues(cluster.DataTypeApp, action, status).Inc()
 }
 
 //NewAppWatch return a new application watch
@@ -132,7 +133,7 @@ func (app *AppWatch) AddEvent(obj interface{}) {
 		Item:     obj,
 	}
 	if err := app.report.ReportData(data); err != nil {
-		reportAppMetrics(types.ActionAdd, "FAILURE")
+		reportAppMetrics(types.ActionAdd, cluster.SyncFailure)
 	} else {
 		reportAppMetrics(types.ActionAdd, cluster.SyncSuccess)
 	}
@@ -154,7 +155,7 @@ func (app *AppWatch) DeleteEvent(obj interface{}) {
 		Item:     obj,
 	}
 	if err := app.report.ReportData(data); err != nil {
-		reportAppMetrics(types.ActionDelete, "FAILURE")
+		reportAppMetrics(types.ActionDelete, cluster.SyncFailure)
 	} else {
 		reportAppMetrics(types.ActionDelete, cluster.SyncSuccess)
 	}
@@ -181,7 +182,7 @@ func (app *AppWatch) UpdateEvent(old, cur interface{}, force bool) {
 		Item:     cur,
 	}
 	if err := app.report.ReportData(data); err != nil {
-		reportAppMetrics(types.ActionUpdate, "FAILURE")
+		reportAppMetrics(types.ActionUpdate, cluster.SyncFailure)
 	} else {
 		reportAppMetrics(types.ActionUpdate, cluster.SyncSuccess)
 	}

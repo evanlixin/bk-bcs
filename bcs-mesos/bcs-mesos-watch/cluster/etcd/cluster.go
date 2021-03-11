@@ -15,10 +15,12 @@ package etcd
 
 import (
 	"fmt"
-
 	"math/rand"
 	"strconv"
 	"time"
+
+	"golang.org/x/net/context"
+	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/Tencent/bk-bcs/bcs-common/common/blog"
 	commtypes "github.com/Tencent/bk-bcs/bcs-common/common/types"
@@ -29,9 +31,6 @@ import (
 	"github.com/Tencent/bk-bcs/bcs-mesos/bcs-mesos-watch/types"
 	"github.com/Tencent/bk-bcs/bcs-mesos/kubebkbcsv2/client/informers"
 	"github.com/Tencent/bk-bcs/bcs-mesos/kubebkbcsv2/client/internalclientset"
-
-	"golang.org/x/net/context"
-	"k8s.io/client-go/tools/clientcmd"
 )
 
 var (
