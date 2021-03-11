@@ -20,6 +20,7 @@ import (
 
 	glog "github.com/Tencent/bk-bcs/bcs-common/common/blog"
 	"github.com/Tencent/bk-bcs/bcs-k8s/bcs-k8s-watch/app/output/action"
+	"github.com/Tencent/bk-bcs/bcs-k8s/bcs-k8s-watch/pkg/metrics"
 )
 
 const (
@@ -28,6 +29,9 @@ const (
 
 	// defaultHandleInterval is default interval of handle.
 	defaultHandleInterval = 500 * time.Millisecond
+
+	// defaultHandlerReportPeriod report queue length for handler dataType
+	defaultHandlerReportPeriod = 5 * time.Second
 )
 
 // Action handles the metadata in ADD/DEL/UPDATE methods.
@@ -75,6 +79,7 @@ func (h *Handler) HandleWithTimeout(data *action.SyncData, timeout time.Duration
 	select {
 	case h.queue <- data:
 	case <-time.After(timeout):
+		metrics.ReportK8sWatchHandlerDiscardEvents(h.dataType)
 		glog.Warn("can't handle data, queue timeout")
 	}
 }
@@ -87,7 +92,12 @@ func (h *Handler) debug() {
 	}
 }
 
-// handle func is drived by wait.NonSlidingUntil with a stop channel, do not block
+// reportQueueLength report datatype length to prometheus metrics
+func (h *Handler) reportHandlerQueueLength() {
+	metrics.ReportK8sWatchHandlerQueueLength(h.dataType, float64(len(h.queue)))
+}
+
+// handle func is invoked by wait.NonSlidingUntil with a stop channel, do not block
 // to recv the queue here in order to make it have runtime to handle the stop channel.
 func (h *Handler) handle() {
 	// try to keep reading from queue until there is no more data every period.
@@ -119,6 +129,7 @@ func (h *Handler) handle() {
 func (h *Handler) Run(stopCh <-chan struct{}) {
 	glog.Infof("%+v resource handler is starting now", h.dataType)
 	go wait.NonSlidingUntil(h.handle, defaultHandleInterval, stopCh)
+	go wait.Until(h.reportHandlerQueueLength, defaultHandlerReportPeriod, stopCh)
 
 	// setup debug.
 	//go h.debug()

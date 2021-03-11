@@ -289,7 +289,7 @@ func RunAsLeader(stopChan <-chan struct{}, config *options.WatchConfig, clusterI
 	watcherMgr.Run(stopChan)
 	glog.Info("start watcher manager success")
 
-	// start http server
+	// init server actions && register web server
 	glog.Info("start http server")
 	certConfig := bcs.CertConfig{
 		CAFile:   config.HttpServer.CAFile,
@@ -298,7 +298,7 @@ func RunAsLeader(stopChan <-chan struct{}, config *options.WatchConfig, clusterI
 		CertPwd:  static.ServerCertPwd,
 		IsSSL:    config.HttpServer.IsSSL,
 	}
-	httpServer := bcs.GetHTTPServer(config, bcs.WithCertConfig(certConfig), bcs.WithDebug(true))
+	httpServer := bcs.GetHTTPServer(config, bcs.WithCertConfig(certConfig), bcs.WithDebug(config.HttpServer.Debug))
 	go func() {
 		err = httpServer.ListenAndServe()
 		if err != nil {
@@ -306,7 +306,6 @@ func RunAsLeader(stopChan <-chan struct{}, config *options.WatchConfig, clusterI
 			close(globalStopChan)
 		}
 	}()
-	// init server actions && register web server
 	glog.Info("start http server successful")
 
 	// finally, start metric, allow fail

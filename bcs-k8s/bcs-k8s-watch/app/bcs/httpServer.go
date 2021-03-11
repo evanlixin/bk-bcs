@@ -10,7 +10,6 @@
  * limitations under the License.
  *
  */
-
 package bcs
 
 import (
@@ -24,6 +23,7 @@ import (
 	watchoptions "github.com/Tencent/bk-bcs/bcs-k8s/bcs-k8s-watch/app/options"
 
 	"github.com/emicklei/go-restful"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 var (
@@ -44,7 +44,7 @@ const (
 	// DefaultFalseHTTPDebug for pprof false
 	DefaultFalseHTTPDebug = false
 	// DefaultTrueHTTPDebug for pprof true
-	DefaultTrueHTTPDebug  = true
+	DefaultTrueHTTPDebug = true
 )
 
 var (
@@ -117,19 +117,21 @@ func newHTTPServerWrap(config *watchoptions.WatchConfig, opts ...Option) *HTTPSe
 		opt:    httpOptions,
 	}
 
-	// register debug pprof
-	serverWrap.registerDebugAction()
+	// register debug pprof & metrics
+	serverWrap.registerInitAction()
 
 	return serverWrap
 }
 
-func (s *HTTPServerWrap) registerDebugAction() error {
+func (s *HTTPServerWrap) registerInitAction() error {
 	if s == nil {
 		return ErrHTTPServerNotInit
 	}
+	actions := []*httpserver.Action{}
 
+	// debug action
 	if s.opt.debug {
-		action := []*httpserver.Action{
+		debugAction := []*httpserver.Action{
 			httpserver.NewAction("GET", "/debug/pprof/", nil, getRouteFunc(pprof.Index)),
 			httpserver.NewAction("GET", "/debug/pprof/{uri:*}", nil, getRouteFunc(pprof.Index)),
 			httpserver.NewAction("GET", "/debug/pprof/cmdline", nil, getRouteFunc(pprof.Cmdline)),
@@ -137,7 +139,18 @@ func (s *HTTPServerWrap) registerDebugAction() error {
 			httpserver.NewAction("GET", "/debug/pprof/symbol", nil, getRouteFunc(pprof.Symbol)),
 			httpserver.NewAction("GET", "/debug/pprof/trace", nil, getRouteFunc(pprof.Trace)),
 		}
-		s.server.RegisterWebServer("", nil, action)
+		actions = append(actions, debugAction...)
+	}
+
+	// metrics action
+	metricAction := []*httpserver.Action{
+		httpserver.NewAction("GET", "/metrics", nil, getRouteHandlerFunc(promhttp.Handler())),
+	}
+
+	actions = append(actions, metricAction...)
+
+	if len(actions) > 0 {
+		s.server.RegisterWebServer("", nil, actions)
 	}
 
 	return nil
@@ -193,5 +206,11 @@ func RegisterAction(action httpserver.Action) {
 func getRouteFunc(f http.HandlerFunc) restful.RouteFunction {
 	return func(req *restful.Request, resp *restful.Response) {
 		f(resp, req.Request)
+	}
+}
+
+func getRouteHandlerFunc(f http.Handler) restful.RouteFunction {
+	return func(req *restful.Request, resp *restful.Response) {
+		f.ServeHTTP(resp, req.Request)
 	}
 }
