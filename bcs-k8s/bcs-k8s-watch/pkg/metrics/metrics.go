@@ -20,9 +20,9 @@ import (
 
 const (
 	// ErrStatus for call api failure
-	ErrStatus = "999"
+	ErrStatus = "failure"
 	// SucStatus for success status
-	SucStatus = "000"
+	SucStatus = "success"
 )
 
 var (
@@ -90,6 +90,16 @@ func ReportK8sWatchAPIMetrics(clusterId, handler, namespace, resourceType, metho
 // ReportK8sWatchHandlerQueueLength report handler chanQueue length
 func ReportK8sWatchHandlerQueueLength(handler string, queueLen float64) {
 	requestsTotalHandlerQueue.WithLabelValues(handler).Set(queueLen)
+}
+
+// ReportK8sWatchHandlerQueueLengthInc inc queue len
+func ReportK8sWatchHandlerQueueLengthInc(handler string) {
+	requestsTotalHandlerQueue.WithLabelValues(handler).Inc()
+}
+
+// ReportK8sWatchHandlerQueueLengthDec dec queue len
+func ReportK8sWatchHandlerQueueLengthDec(handler string) {
+	requestsTotalHandlerQueue.WithLabelValues(handler).Dec()
 }
 
 // ReportK8sWatchHandlerDiscardEvents report handler discard events num

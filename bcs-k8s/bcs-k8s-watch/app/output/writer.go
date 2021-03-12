@@ -131,6 +131,7 @@ func (w *Writer) Sync(data *action.SyncData) {
 
 	select {
 	case w.queue <- data:
+		metrics.ReportK8sWatchHandlerQueueLengthInc(NormalQueue)
 	case <-time.After(defaultQueueTimeout):
 		metrics.ReportK8sWatchHandlerDiscardEvents(NormalQueue)
 		glog.Warn("can't sync data, queue timeout")
@@ -146,6 +147,7 @@ func (w *Writer) SyncAlarmEvent(data *action.SyncData) {
 
 	select {
 	case w.alarmQueue <- data:
+		metrics.ReportK8sWatchHandlerQueueLengthInc(AlarmQueue)
 	case <-time.After(defaultQueueTimeout):
 		metrics.ReportK8sWatchHandlerDiscardEvents(AlarmQueue)
 		glog.Warn("can't sync data, alarm queue timeout")
@@ -160,6 +162,7 @@ func (w *Writer) distributeNormal() {
 	for {
 		select {
 		case data := <-w.queue:
+			metrics.ReportK8sWatchHandlerQueueLengthDec(NormalQueue)
 			if handler, ok := w.Handlers[data.Kind]; ok {
 				handler.HandleWithTimeout(data, defaultQueueTimeout)
 			} else {
@@ -181,6 +184,7 @@ func (w *Writer) distributeAlarm() {
 	for {
 		select {
 		case data := <-w.alarmQueue:
+			metrics.ReportK8sWatchHandlerQueueLengthDec(AlarmQueue)
 			w.alertor.DoAlarm(data)
 
 		case <-time.After(defaultQueueTimeout):
@@ -228,6 +232,7 @@ func (w *Writer) Run(stopCh <-chan struct{}) error {
 
 	// report writer module queueLen metrics
 	go wait.Until(w.reportWriterQueueLength, defaultHandlerReportPeriod, w.stopCh)
+
 	// setup debug.
 	//go w.debug()
 

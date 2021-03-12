@@ -186,13 +186,15 @@ func (client *StorageClient) NewRequest() (*gorequest.SuperAgent, error) {
 
 func (client *StorageClient) GET() (storageResp StorageResponse, err error) {
 	start := time.Now()
+	status := metrics.SucStatus
 	// timeout
 	url, handlerName := client.GetURL()
 
 	request, err := client.NewRequest()
 	if err != nil {
+		status = metrics.ErrStatus
 		metrics.ReportK8sWatchAPIMetrics(client.ClusterID, handlerName, client.Namespace, client.ResourceType,
-			http.MethodGet, fmt.Sprintf("%v", storageResp.Code), start)
+			http.MethodGet, status, start)
 		return
 	}
 	resp, _, errs := request.
@@ -202,27 +204,31 @@ func (client *StorageClient) GET() (storageResp StorageResponse, err error) {
 
 	if !storageResp.Result {
 		glog.Debug(fmt.Sprintf("method=GET url=%s, resp=%v", url, storageResp))
+		status = metrics.ErrStatus
 	}
 
 	if errs != nil {
 		glog.Errorf("GET fail: [url=%s, resp=%v, errors=%s]", url, resp, errs)
 		err = errors.New("HTTP error")
+		status = metrics.ErrStatus
 	}
 
 	metrics.ReportK8sWatchAPIMetrics(client.ClusterID, handlerName, client.Namespace, client.ResourceType,
-		http.MethodGet, fmt.Sprintf("%v", storageResp.Code), start)
+		http.MethodGet, status, start)
 	return
 }
 
 func (client *StorageClient) DELETE() (storageResp StorageResponse, err error) {
 	start := time.Now()
+	status := metrics.SucStatus
 	// timeout retry
 	url, handlerName := client.GetURL()
 
 	request, err := client.NewRequest()
 	if err != nil {
+		status := metrics.ErrStatus
 		metrics.ReportK8sWatchAPIMetrics(client.ClusterID, handlerName, client.Namespace, client.ResourceType,
-			http.MethodDelete, fmt.Sprintf("%v", storageResp.Code), start)
+			http.MethodDelete, status, start)
 		return
 	}
 	resp, _, errs := request.
@@ -233,20 +239,23 @@ func (client *StorageClient) DELETE() (storageResp StorageResponse, err error) {
 
 	if !storageResp.Result {
 		glog.Debug(fmt.Sprintf("method=DELETE, url is %s, all response: %v", url, storageResp))
+		status = metrics.ErrStatus
 	}
 
 	if errs != nil {
 		glog.Errorf("DELETE fail: [url=%s, resp=%v, errors=%s]", url, resp, errs)
 		err = errors.New("HTTP error")
+		status = metrics.ErrStatus
 	}
 
 	metrics.ReportK8sWatchAPIMetrics(client.ClusterID, handlerName, client.Namespace, client.ResourceType,
-		http.MethodDelete, fmt.Sprintf("%v", storageResp.Code), start)
+		http.MethodDelete, status, start)
 	return
 }
 
 func (client *StorageClient) PUT(data interface{}) (storageResp StorageResponse, err error) {
 	start := time.Now()
+	status := metrics.SucStatus
 	url, handlerName := client.GetURL()
 
 	request, err := client.NewRequest()
@@ -256,8 +265,9 @@ func (client *StorageClient) PUT(data interface{}) (storageResp StorageResponse,
 
 	body, err := client.GetBody(data)
 	if err != nil {
+		status = metrics.ErrStatus
 		metrics.ReportK8sWatchAPIMetrics(client.ClusterID, handlerName, client.Namespace, client.ResourceType,
-			http.MethodPut, fmt.Sprintf("%v", storageResp.Code), start)
+			http.MethodPut, status, start)
 		return
 	}
 
@@ -275,31 +285,35 @@ func (client *StorageClient) PUT(data interface{}) (storageResp StorageResponse,
 		} else {
 			glog.Debug(fmt.Sprintf("method=PUT url=%s, body=%s, errors=%s, resp=%v, storageResp=%v", url, string(debugBody), errs, resp, storageResp))
 		}
+		status = metrics.ErrStatus
 	}
 
 	if errs != nil {
 		glog.Errorf("PUT fail: [url=%s, data=%s, resp=%s, errors=%s]", url, body, resp, errs)
 		err = errors.New("HTTP error")
+		status = metrics.ErrStatus
 	}
 
 	metrics.ReportK8sWatchAPIMetrics(client.ClusterID, handlerName, client.Namespace, client.ResourceType,
-		http.MethodPut, fmt.Sprintf("%v", storageResp.Code), start)
+		http.MethodPut, status, start)
 	return
 }
 
 func (client *StorageClient) listResource(url string, handlerName string) (data []interface{}, err error) {
 	var (
-		start = time.Now()
+		start       = time.Now()
 		storageResp = StorageResponse{}
+		status      = metrics.SucStatus
 	)
 
 	defer func() {
 		metrics.ReportK8sWatchAPIMetrics(client.ClusterID, handlerName, client.Namespace, client.ResourceType,
-			http.MethodGet, fmt.Sprintf("%v", storageResp.Code), start)
+			http.MethodGet, status, start)
 	}()
 
 	request, err := client.NewRequest()
 	if err != nil {
+		status = metrics.ErrStatus
 		return
 	}
 
@@ -309,11 +323,13 @@ func (client *StorageClient) listResource(url string, handlerName string) (data 
 		EndStruct(&storageResp)
 
 	if !storageResp.Result {
+		status = metrics.ErrStatus
 		err = fmt.Errorf("listResource result=false [url=%s, resp=%v, storageResp=%v]", url, resp, storageResp)
 		return
 	}
 
 	if errs != nil {
+		status = metrics.ErrStatus
 		err = fmt.Errorf("listResource do GET fail! [url=%s, resp=%v, errs=%s]", url, resp, errs)
 		return
 	}

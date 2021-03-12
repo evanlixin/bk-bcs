@@ -78,6 +78,7 @@ func (h *Handler) Handle(data *action.SyncData) {
 func (h *Handler) HandleWithTimeout(data *action.SyncData, timeout time.Duration) {
 	select {
 	case h.queue <- data:
+		metrics.ReportK8sWatchHandlerQueueLengthInc(h.dataType)
 	case <-time.After(timeout):
 		metrics.ReportK8sWatchHandlerDiscardEvents(h.dataType)
 		glog.Warn("can't handle data, queue timeout")
@@ -104,6 +105,7 @@ func (h *Handler) handle() {
 	for {
 		select {
 		case data := <-h.queue:
+			metrics.ReportK8sWatchHandlerQueueLengthDec(h.dataType)
 			switch data.Action {
 			case action.SyncDataActionAdd:
 				h.act.Add(data)
